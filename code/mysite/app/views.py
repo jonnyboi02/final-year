@@ -3,6 +3,8 @@ from django.http import HttpResponse
 from .models import User
 from django.views.decorators.csrf import csrf_exempt
 import io, json
+from django.contrib.auth import authenticate, login
+import os
 # Create your views here.
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
@@ -22,4 +24,18 @@ def register(request):
     user.save()
     return HttpResponse(status  = 200)
     #return HttpResponse("Hi")
-        
+
+def login(request):
+    json_data = request.body
+    body = json.loads(json_data)
+    #query_seller = body['seller']
+    username = body['username']
+    password = body['password']
+    user = authenticate(request, username = username, password = password)
+    if user is not None:
+        login(request, user)
+        return redirect
+    else:
+        pass
+
+#create view that makes use of Geth API call, done probably by OS calls
