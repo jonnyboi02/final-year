@@ -17,10 +17,17 @@
 <script>
 export default{
     data(){
-
         return{
-            recipient:"",
-            funds: "",
+            user: {
+                recipient:"",
+                funds: "",
+            }
+
+        }
+    },
+    methods:{
+        sendTransaction(){
+            
 
 
         }

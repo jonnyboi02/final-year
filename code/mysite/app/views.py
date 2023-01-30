@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from .models import User
+from .models import User, NFT
 from django.views.decorators.csrf import csrf_exempt
 import io, json
 from django.contrib.auth import authenticate, login
@@ -37,5 +37,19 @@ def login(request):
         return redirect
     else:
         pass
+
+def upload_NFT(request):
+    if request.method == 'POST':
+        file = request.FILES['file']
+        body = json.loads(request.body)
+        username = body['username']
+        #Gets the object user to link to the NFT
+        try:
+            user_object = User.objects.get(username = username)
+            upload = NFT.objects.create(collateral = file, user=user_object)
+            upload.save()
+            return HttpResponse("NFT uploaded")
+        except:
+            return HttpResponse("Error processing NFT")
 
 #create view that makes use of Geth API call, done probably by OS calls
