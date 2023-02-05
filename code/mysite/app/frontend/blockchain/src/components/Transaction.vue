@@ -2,10 +2,10 @@
     <h2>Send Ether</h2>
     <div>
         <div>
-            Recipient key: <input v-model = "recipient"/>
+            Recipient key: <input v-model = "user['recipient']"/>
         </div>
         <div>
-            Ether to send: <input v-model = 'funds'/>
+            Ether to send: <input v-model = "user['funds']"/>
         </div>
 
         <button onclick=""></button>
@@ -27,6 +27,7 @@ export default{
     },
     methods:{
         sendTransaction(){
+            
             
 
 

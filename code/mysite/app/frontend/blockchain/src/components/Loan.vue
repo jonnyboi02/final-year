@@ -9,10 +9,6 @@
     </div>
     <button @click='submitFile'>Request Loan</button>
 
-
-
-
-
 </template>
 
 <script>
