@@ -1,4 +1,5 @@
 <template>
+    
     <h2>Send Ether</h2>
     <div>
         <div>
@@ -15,10 +16,19 @@
 </template>
 
 <script>
+
+import GetAccounts from './GetAccounts.vue';
+
 export default{
+    components:{
+        GetAccounts,
+    },
     data(){
         return{
-            user: {
+            currentUser:{
+                publicKey: "",
+            },
+            user:{
                 recipient:"",
                 funds: "",
             }

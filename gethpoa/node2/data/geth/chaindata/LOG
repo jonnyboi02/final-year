@@ -80,3 +80,13 @@
 13:20:03.670147 version@stat F·[2 1] S·154KiB[898B 153KiB] Sc·[0.50 0.00]
 13:20:03.683655 db@janitor F·5 G·0
 13:20:03.683655 db@open done T·28.398ms
+=============== Feb 11, 2023 (GMT) ===============
+20:40:45.356326 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+20:40:45.357327 version@stat F·[2 1] S·154KiB[898B 153KiB] Sc·[0.50 0.00]
+20:40:45.357327 db@open opening
+20:40:45.357327 journal@recovery F·1
+20:40:45.359326 journal@recovery recovering @19
+20:40:45.368877 memdb@flush created L0@21 N·4167 S·214KiB "H\x02\xb9..\x83\xa8*,v4661":"unc..own,v3280"
+20:40:45.370886 version@stat F·[3 1] S·368KiB[215KiB 153KiB] Sc·[0.75 0.00]
+20:40:45.375878 db@janitor F·6 G·0
+20:40:45.376878 db@open done T·19.551ms

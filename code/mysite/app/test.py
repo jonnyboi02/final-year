@@ -1,4 +1,8 @@
 import os
+import json
+import http.client
+import requests
+
 
 def createNode(password):
     os.chdir("gethpoa")
@@ -34,8 +38,36 @@ def create_node():
     res = input("Enter password")
     createNode(res)
 
+def getInformation():
+    conn = http.client.HTTPConnection('http://127.0.0.1:8000')
+    headers = {'Content-Type': 'application/json'}
+    body = {'password': '123456789'}
+    conn.request("POST", "/create_account/", body=json.dumps(body), headers=headers)
+
+    # print the response
+    response = conn.getresponse()
+    print(json.loads(response.read().decode()))
 
 
+
+def getAccounts():
+    url = 'http://localhost:8000/get_accounts/'
+
+    # Send a GET request to the Django view
+    response = requests.get(url)
+
+    # Check if the response was successful
+    if response.status_code == 200:
+        # Parse the response data as JSON
+        response_data = json.loads(response.content)
+        # Extract the list of accounts
+        accounts = response_data['accounts']
+        # Print the list of accounts
+        print(accounts)
+    else:
+        print('Error:', response.status_code)
 
 #createNode()
-create_node()
+#create_node()
+#getInformation()
+getInformation()

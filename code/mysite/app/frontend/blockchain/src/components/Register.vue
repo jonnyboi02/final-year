@@ -14,7 +14,7 @@
 
         </form>
     </div>
-
+    
     
 
 </template>
@@ -40,14 +40,6 @@ export default{
             if (form['username'] === ""){
                 message = "Username cannot be empty!";
                 alert("Username cannot be empty!");
-            //     Toastify({
-            //     text: "Successful registration",
-            //     className: "info",
-            //     style: {
-            //       background: "linear-gradient(to right, #00b09b, #96c93d)",
-            //     }
-            //   }).showToast();
-
             }
             response = fetch("http://127.0.0.1:8000/register/", {
                 method: 'POST',
@@ -55,24 +47,45 @@ export default{
                 'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(this.form),
-            }).then(()=>   
-                Toastify({
-                text: "Successful registration",
-                className: "info",
-                style: {
-                  background: "linear-gradient(to right, #00b09b, #96c93d)",
+            }).then(response => {
+                if (response.status === 200){
+                    Toastify({
+                    text: "Successful registration",
+                    className: "info",
+                    style: {
+                    background: "linear-gradient(to right, #00b09b, #96c93d)",
+                    }
+                }).showToast()
+
                 }
-              }).showToast())
-
-         
-
-            if (response.status === 400){
-                alert("User already exists!")
-            } 
-            else{
-                alert("Account created")
-            }
+            })    
         
+        
+        },
+        async createAccount() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/create_account/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: JSON.stringify({
+                    'password': this.password
+                })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                this.accountAddress = data.address;
+                this.errorMessage = null;
+                } else {
+                this.accountAddress = null;
+                this.errorMessage = "Failed to create account";
+                }
+            } catch (error) {
+                console.error(error);
+                this.accountAddress = null;
+                this.errorMessage = "An error occurred while creating the account";
+            }
         },
 
     }

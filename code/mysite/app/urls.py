@@ -16,7 +16,7 @@ Including another URLconf
 #from django.contrib import admin
 from django.urls import path, include
 from . import views
-from .views import register, upload_NFT
+from .views import register, upload_NFT, create_account, get_accounts, send_transaction
 
 app_name = 'app'
 
@@ -25,5 +25,8 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('register/', register),
     path('upload/', upload_NFT),
+    path('create_account/', create_account),
+    path('get_accounts/', get_accounts),
+    path('send_transaction/', send_transaction)
     
 ]
