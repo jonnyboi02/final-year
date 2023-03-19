@@ -1,8 +1,8 @@
 <template>
-    Hi {{form['username'] }}
+    <h3>Hi {{form['username'] }}</h3>
 
     <div>
-        <form ref="form">
+        <!-- <form ref="form"> -->
             <div>
             Username:<input class = 'form-control' v-model='form["username"]' />
             </div> 
@@ -11,11 +11,12 @@
             </div>
             <button @click="registerUser">Register</button>
             {{message}}
+            <p v-if="accountAddress">Account Address: {{ accountAddress }}</p>
+            <p v-if="check">Account Address: {{ check }}</p>
 
-        </form>
+
+        <!-- </form> -->
     </div>
-    
-    
 
 </template>
 
@@ -27,66 +28,104 @@ import "toastify-js/src/toastify.css"
 export default{
     data(){
         return{
+            accountAddress: null,
+            errorMessage: null,
             message: "",
             form:{
                 username : "",
                 password : "",
             },
+            check: null,
 
         }
     },
     methods :{
         async registerUser(){
-            if (form['username'] === ""){
-                message = "Username cannot be empty!";
-                alert("Username cannot be empty!");
+            if (this.form.username === ""){
+               // this.message = "Username cannot be empty!";
+                //alert("Username cannot be empty!");
+                Toastify({
+                    text: 'Username cannot be empty!',
+                    backgroundColor: 'red',
+                    gravity: 'top',
+                    position: 'right'
+                }).showToast();
             }
-            response = fetch("http://127.0.0.1:8000/register/", {
+            else{
+                
+            const response = await fetch("http://127.0.0.1:8000/register/", {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(this.form),
-            }).then(response => {
-                if (response.status === 200){
-                    Toastify({
-                    text: "Successful registration",
-                    className: "info",
-                    style: {
-                    background: "linear-gradient(to right, #00b09b, #96c93d)",
-                    }
-                }).showToast()
-
-                }
-            })    
-        
-        
-        },
-        async createAccount() {
-            try {
-                const response = await fetch('http://127.0.0.1:8000/create_account/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: JSON.stringify({
-                    'password': this.password
-                })
+            });
+             
+            if (response.ok){
+                Toastify({
+                    text: 'Account Created Successfully! ' ,
+                    backgroundColor: 'green',
+                    gravity: 'top',
+                    position: 'right'
+                }).showToast();
+                const response = await fetch('http://127.0.0.1:8000/get-user-details/', {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 'username': this.form.username }),
                 });
                 const data = await response.json();
-                if (response.ok) {
-                this.accountAddress = data.address;
-                this.errorMessage = null;
-                } else {
-                this.accountAddress = null;
-                this.errorMessage = "Failed to create account";
-                }
-            } catch (error) {
-                console.error(error);
-                this.accountAddress = null;
-                this.errorMessage = "An error occurred while creating the account";
+                this.accountAddress = data.public_key;
+            //     const api = await fetch("http://127.0.0.1:8000/public_key/", {
+            //     method: 'POST',
+            //     headers: {
+            //     'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify({'username': this.form.username}),
+            // }).then(response => {
+            //     this.accountAddress = response.data.key
+            // })
+                
+               
             }
+            else{
+                Toastify({
+                    text: 'Account with same username Exists! ',
+                    backgroundColor: 'orange',
+                    gravity: 'top',
+                    position: 'right'
+                }).showToast();
+            }
+    
+              
+        } 
         },
+        // async createAccount() {
+        //     try {
+        //         const response = await fetch('http://127.0.0.1:8000/create_account/', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Content-Type': 'application/x-www-form-urlencoded'
+        //         },
+        //         body: JSON.stringify({
+        //             'password': this.password
+        //         })
+        //         });
+        //         const data = await response.json();
+        //         if (response.ok) {
+        //         this.accountAddress = data.address;
+        //         this.errorMessage = null;
+        //         } else {
+        //         this.accountAddress = null;
+        //         this.errorMessage = "Failed to create account";
+        //         }
+        //     } catch (error) {
+        //         console.error(error);
+        //         this.accountAddress = null;
+        //         this.errorMessage = "An error occurred while creating the account";
+        //     }
+        // },
 
     }
 

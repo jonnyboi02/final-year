@@ -1,4 +1,5 @@
 <template>
+    
     <h2>Request loan</h2>
     <div>
         Amount Requested: <input v-model="funds.requestedLoan"/>

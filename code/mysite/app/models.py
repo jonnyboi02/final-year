@@ -3,16 +3,20 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 # Create your models here.
 class User(AbstractUser):
-    private_key = models.CharField(max_length=250)
     key_store = models.FileField(blank=True, null=True)
     public_key = models.CharField(max_length=250)
 
-    def get_key(self):
-        return self.private_key
+    username = models.CharField(unique=True, max_length=150)
+
 
     def get_public_key(self):
         return self.public_key
+    
+    def set_public_key(self, key):
+        self.public_key = key
 
+    def get_username(self):
+        return self.username
 
 class NFT(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

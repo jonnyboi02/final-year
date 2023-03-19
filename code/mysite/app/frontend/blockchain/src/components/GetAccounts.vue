@@ -1,6 +1,6 @@
 <template>
     <div>
-      <h2>List of Accounts</h2>
+      <h3>List of Accounts</h3>
       <table>
         <thead>
           <tr>

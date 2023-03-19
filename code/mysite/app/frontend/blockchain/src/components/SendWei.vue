@@ -1,4 +1,6 @@
 <template>
+  <GetAccounts/>
+  <h3>Send Ether</h3>
   <div>
     <form @submit.prevent="sendTransaction">
       <label for="sender_address">Sender Address</label>
@@ -27,45 +29,47 @@
 
 <script>
 import Toastify from 'toastify-js';
+import GetAccounts from './GetAccounts.vue';
 
 export default {
-  data() {
-    return {
-      senderAddress: '0x13ca48E880D7A28F4648eEd3B1Dc558E0D0Dc264',
-      senderPassword: '123456789',
-      recipientAddress: '0xc63AB01569680E6388A7B4EbbdBaf260be9870dc',
-      value: '0x20000000000000000000',
-      // gas: '',
-      // gasPrice: ''
-    };
-  },
-  methods: {
-    sendTransaction() {
-      const data = {
-        sender_address: this.senderAddress,
-        sender_password: this.senderPassword,
-        recipient_address: this.recipientAddress,
-        value: this.value,
-      };
-      fetch('http://127.0.0.1:8000/send_transaction/', {
-        method: 'POST',
-        body: new URLSearchParams(data)
-      })
-        .then(response => response.json())
-        .then(response => {
-          console.log(response);
-          Toastify({
-            text: "Transaction sent successfully!",
-            duration: 3000,
-            close: true,
-            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-            stopOnFocus: true
-          }).showToast();
-        })
-        .catch(error => {
-          console.error(error);
-        });
-    }
-  }
+    data() {
+        return {
+            senderAddress: "0x13ca48E880D7A28F4648eEd3B1Dc558E0D0Dc264",
+            senderPassword: "123456789",
+            recipientAddress: "0xc63AB01569680E6388A7B4EbbdBaf260be9870dc",
+            value: "0x20000000000000000000",
+            // gas: '',
+            // gasPrice: ''
+        };
+    },
+    methods: {
+        sendTransaction() {
+            const data = {
+                sender_address: this.senderAddress,
+                sender_password: this.senderPassword,
+                recipient_address: this.recipientAddress,
+                value: this.value,
+            };
+            fetch("http://127.0.0.1:8000/send_transaction/", {
+                method: "POST",
+                body: new URLSearchParams(data)
+            })
+                .then(response => response.json())
+                .then(response => {
+                console.log(response);
+                Toastify({
+                    text: "Transaction sent successfully!",
+                    duration: 3000,
+                    close: true,
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    stopOnFocus: true
+                }).showToast();
+            })
+                .catch(error => {
+                console.error(error);
+            });
+        }
+    },
+    components: { GetAccounts }
 };
 </script>
