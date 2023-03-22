@@ -1,10 +1,35 @@
 
    <template>
+    <div v-if="borrower">
+      {{borrower.address}}
+    </div>
     <div>
+      <!-- form:{
+          amount: 100,
+          rate: 10,
+          duration: 3600,
+          collateralAmount: 200,
+          collateralHolder: null,
+          collateralUrl: " ",
+          price: 10,
+        } -->
      
-        Amount of Loan: <input value="100"/>
+        Amount of Loan: <input  v-model="form.amount"/>
         <br>
-        Rate: <input value="10"/>
+        Rate: <input  v-model="form.rate"/>
+        <br>
+        Number of months: <input v-model="form.duration"/>
+        <br>
+        Collateral value: <input v-model="form.collateralAmount"/>
+        <br>
+        Borrower Address: <input v-model="form.collateralHolder"/>
+        <br>
+        Desired Price of Contract (in Ethers): <input v-model="form.price"/>
+
+
+        
+
+
       <div>
         <button @click="deployLoanContract">Deploy smart contract</button>
       </div>
@@ -57,6 +82,7 @@
         loanContractInstance: null,
         loanDetails: null,
         accounts: null,
+        borrower: null,
         form:{
           amount: 100,
           rate: 10,
@@ -64,7 +90,9 @@
           collateralAmount: 200,
           collateralHolder: null,
           collateralUrl: " ",
-          price: 10,
+
+          //0.5 Ether as default price
+          price: 500,
         }
       };
     },
@@ -147,20 +175,47 @@
           gas: gas, // Pass the gas limit to the send method
         };
 
-        // const args = [
-        //   100, // amount
-        //   10, // rate
-        //   3600, // duration
-        //   200, // collateralAmount
-        //   accounts[1], // collateralHolder
-        // ];
+        
+        var account = null;
+        const response = fetch("http://127.0.0.1:8000/get_address/", {
+                method: "POST", 
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    'username': localStorage.getItem('username'), 
+                }),
+                
+            }).then(response => response.json())
+            .then(data=>{
+                if (data.error){
+                    console.log(error)
+                }
+                else{
+                    this.form.collateralHolder = data.key
+                    for (let i = 0; i < accounts.length; i++) {
 
-        const args = [
+                      if (JSON.stringify(accounts[i].toLowerCase()) === JSON.stringify(data.key.toLowerCase())) {
+                        account = accounts[i];
+                        break;
+                      }
+                    }
+                    
+                    //this.senderPassword = localStorage.getItem('password')
+                }
+            });
+          
+        
+        this.borrower = accounts[accounts.length-5]
+        for (let i = 0; i < accounts.length; i++) {
+          if (JSON.stringify(accounts[i].toLowerCase()) === JSON.stringify(this.borrower.toLowerCase())) {
+            account = accounts[i];
+            const args = [
           this.form.amount, // amount
           this.form.rate, // rate
           this.form.duration, // duration
           this.form.collateralAmount, // collateralAmount
-          accounts[1], // collateralHolder
+         account, // collateralHolder
           this.form.collateralUrl, 
           this.form.price,
         ];
@@ -169,13 +224,24 @@
           const contract = await LoanContract.deploy({
             arguments: args
           }).send(options);
+          
           this.loanContractAddress = contract.options.address;
           this.loanContractInstance = new web3.eth.Contract(
             LoanABI, 
             this.loanContractAddress,
           ) 
+          const response= fetch("http://127.0.0.1:8000/contracts/",{
+            method: "PUT", 
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    'address': this.loanContractAddress, 
+                }),
+
+          })
           Toastify({
-            text: `Deployed loan contract ` + this.loanContractAddress,
+            text: `Deployed loan contract ` + this.loanContractAddress +" "+ this.borrower ,
             backgroundColor: 'green',
             position: 'center',
           }).showToast();
@@ -188,8 +254,14 @@
           }).showToast();
 
         }
+            break;
+          }
+        }
+
+
 
       },
+
      
     },
   };

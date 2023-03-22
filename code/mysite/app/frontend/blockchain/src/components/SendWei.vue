@@ -23,7 +23,9 @@
       <input type="text" id="gas_price" v-model="gasPrice">
       <br> -->
       <button type="submit">Send Transaction</button>
+      
     </form>
+    <button @click="getAddress">Test</button>
   </div>
 </template>
 
@@ -43,6 +45,29 @@ export default {
         };
     },
     methods: {
+        async getAddress(){
+            const response = fetch("http://127.0.0.1:8000/get_address/", {
+                method: "POST", 
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    'username': localStorage.getItem('username'), 
+                }),
+                
+            }).then(response => response.json())
+            .then(data=>{
+                if (data.error){
+                    console.log(error)
+                }
+                else{
+                    this.senderAddress = data.key
+                    this.senderPassword = localStorage.getItem('password')
+                }
+            })
+            
+            
+        },
         sendTransaction() {
             const data = {
                 sender_address: this.senderAddress,

@@ -2,8 +2,8 @@ import subprocess
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 
-from .forms import NFTForm
-from .models import User, NFT
+from .forms import ContractForm
+from .models import User, Contract
 from django.views.decorators.csrf import csrf_exempt
 import io, json
 from django.contrib.auth import authenticate, login
@@ -12,6 +12,7 @@ import http.client
 import requests
 from web3 import Web3
 from solcx import compile_source, install_solc, set_solc_version
+from rest_framework.authtoken.models import Token
 
 import re
 #from web3 import Web3
@@ -84,20 +85,87 @@ def register(request):
 #     # return the list of contracts as a JSON response
 #     return JsonResponse({'contracts': contracts})
 
+@csrf_exempt
+def login_view2(request):
+    if request.method == 'POST':
+        # username = request.POST.get('username')
+        # password = request.POST.get('password')
+        json_data = request.body
+        body = json.loads(json_data)
+            #query_seller = body['seller']
+        username = body['username']
+        password = body['password']
+        user = authenticate(username=username, password=password)
+        if user:
+            login(request, user)
+            token, _ = Token.objects.get_or_create(user=user)
+            return JsonResponse({'token': token.key})
+        else:
+            return JsonResponse({'error': 'Invalid credentials'}, status=400)
 
-def login(request):
+#Get the crypto key from the user object
+def getAddress(request):
+    pattern = r'^0x[a-fA-F0-9]{40}$'
     json_data = request.body
     body = json.loads(json_data)
-    #query_seller = body['seller']
     username = body['username']
-    password = body['password']
-    user = authenticate(request, username = username, password = password)
+    if re.match(pattern, username):
+        return JsonResponse({'key' : username})
+    user = User.objects.get(username=username)
     if user is not None:
-        login(request, user)
-        return JsonResponse({'success' : True})
-        #return redirect
+        return JsonResponse({'key' : user.public_key})
     else:
-        return JsonResponse({'success' : False, 'message': 'Invalid credentials'})
+        return JsonResponse({'error': 'Error occured'}, status=400)
+
+
+#contract addresss
+def contractAPI(request):
+    if request.method == 'PUT':
+        json_data = request.body
+        body = json.loads(json_data)
+        contract_address = body['address']
+        contract = Contract.objects.create(contract_address = contract_address)
+        contract.save()
+        return JsonResponse({'contract_address' : contract_address})
+    elif request.method == 'GET':
+        addresses = [address.contract_address for address in Contract.objects.all()]
+        return JsonResponse(addresses, safe=False)
+
+        
+
+
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+    
+        if username and password:
+            user = authenticate(username=username, password=password)
+
+            if user is not None:
+                if user.is_active:
+                    login(request, user)
+                    return JsonResponse({'success': True})
+                else:
+                    return JsonResponse({'success': False, 'message': 'User account is disabled.'})
+            else:
+                return JsonResponse({'success': False, 'message': 'Invalid login credentials.'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Username and password are required.'})
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
+
+# def login_view(request):
+#     error = None
+#     if request.method == 'POST':
+#         user = User.objects.get(username=request.data['username'])
+#         if user.check_password(request.data['password']) is True:
+#             token, x = Token.objects.get_or_create(user=user)
+#             return JsonResponse({'status': 'OK', 'access_key': 'hi'}, status=200)
+#         else:
+#             return JsonResponse({'status': 'ERROR', 'access_key': ''}, status=400)
+#     return JsonResponse({'status': 'ERROR', 'access_key': ''}, status=400)
     
 def user_details(request):
     if request.method == "POST":

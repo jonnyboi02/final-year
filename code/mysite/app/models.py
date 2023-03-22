@@ -18,10 +18,11 @@ class User(AbstractUser):
     def get_username(self):
         return self.username
 
-class NFT(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+class Contract(models.Model):
+   # user = models.ForeignKey(User, on_delete=models.CASCADE)
     contract_address = models.TextField(max_length=255)
     collateral = models.FileField(upload_to='collateral') 
+    
 
     def get_collateral_url(self):
         return self.collateral.url

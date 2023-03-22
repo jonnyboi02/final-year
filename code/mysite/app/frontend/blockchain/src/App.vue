@@ -6,14 +6,17 @@
           <li class="nav-item">
             <router-link to="/transaction" class="nav-link">Transaction</router-link>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <router-link to="/create_account" class="nav-link">Create Account</router-link>
-          </li>
+          </li> -->
           <li class="nav-item">
             <router-link to="/register" class="nav-link">Registration</router-link>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <router-link to="/login" class="nav-link">Login</router-link>
+          </li> -->
+          <li class="nav-item">
+            <router-link to="/login2" class="nav-link">Login2</router-link>
           </li>
           <li class="nav-item">
             <router-link to="/eth_balance" class="nav-link">Balance</router-link>
@@ -42,6 +45,7 @@ import GetAccounts from './components/GetAccounts.vue'
 import CreateAccount from './components/CreateAccount.vue'
 import SendWei from './components/SendWei.vue'
 import RequestLoan from './components/RequestLoan.vue'
+import Login2 from './components/Login2.vue'
 
 export default {
   name: 'App',

@@ -15,10 +15,16 @@
 
 <script>
 
+import Toastify from 'toastify-js'
+import "toastify-js/src/toastify.css"
+import {user} from "../user.js";
+
+user.init()
+
 const apiUrl = 'http://localhost:8000'; // replace this with your API's URL
 
 function login(username, password) {
-  return fetch(`${apiUrl}/login/`, {
+  return fetch('http://localhost:8000/login/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -34,11 +40,12 @@ function login(username, password) {
     .then(data => {
       const { token } = data;
       localStorage.setItem('token', token); // store the token in localStorage
+      
       return data;
     });
+    
 }
-import Toastify from 'toastify-js'
-import "toastify-js/src/toastify.css"
+
 //import login from 'api.js'
 export default{
     data(){
@@ -53,7 +60,7 @@ export default{
             .then (() => { 
                 this.$router.push({name: 'Send Transaction'})
                 Toastify({
-                    text: 'Login successful',
+                    text: 'Login successful' + user.username,
                     backgroundColor: 'green',
                     className: 'toastify-content',
                 }).showToast();
