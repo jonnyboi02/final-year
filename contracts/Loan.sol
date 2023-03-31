@@ -23,8 +23,8 @@ contract Loan {
         string memory _collateralUrl,
         uint _price
     ) {
-        borrower = msg.sender;
-        lender = address(0);
+        borrower = _collateralHolder;
+        lender = msg.sender;
         owner = msg.sender;
         amount = _amount;
         rate = _rate;
@@ -38,15 +38,17 @@ contract Loan {
     }
 
     function makeRepayment() external payable {
-        require(msg.value == amount + amount * rate / 100, "Incorrect repayment amount");
+        //require(msg.value == amount + amount * rate / 100, "Incorrect repayment amount");
         require(msg.sender == borrower, "Only borrower can make repayment");
-        require(block.timestamp <= dueDate, "Loan is already overdue");
-        isRepaid = true;
+        // require(block.timestamp <= dueDate, "Loan is already overdue");
+        if (msg.value >= amount + amount * rate / 100){
+            isRepaid = true;
+        } 
         payable(collateralHolder).transfer(collateralAmount);
     }
 
     function changeLender(address _newLender) external {
-        require(msg.sender == lender || lender == address(0), "Only current lender can change the lender");
+        // require(msg.sender == lender || lender == address(0), "Only current lender can change the lender");
         lender = _newLender;
         owner = _newLender;
     }

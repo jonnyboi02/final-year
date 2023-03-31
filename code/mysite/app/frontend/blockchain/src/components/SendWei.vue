@@ -1,20 +1,32 @@
-<template>
-  <GetAccounts/>
-  <h3>Send Ether</h3>
+<template >
+<div style="color: white;">
+  <!-- <GetAccounts /> -->
+  <h3 style="color: white;">Send Ether</h3>
+  <div id = 'info'>
+    Please make sure that you select the correct address to receive the Ethers as this operation is <span style="color: red;">IRRREVERSIBLE</span>
+  </div>
   <div>
-    <form @submit.prevent="sendTransaction">
-      <label for="sender_address">Sender Address</label>
+    <form @submit.prevent="sendTransaction" >
+      <!-- <label for="sender_address">Sender Address</label><br>
       <input type="text" id="sender_address" v-model="senderAddress">
       <br>
-      <label for="sender_password">Sender Password</label>
+      <label for="sender_password">Sender Password</label><br>
       <input type="password" id="sender_password" v-model="senderPassword">
-      <br>
-      <label for="recipient_address">Recipient Address</label>
+      <br> -->
+      <!-- <label for="recipient_address">Recipient Address</label><br>
       <input type="text" id="recipient_address" v-model="recipientAddress">
-      <br>
-      <label for="value">Value (in wei)</label>
+      <br> -->
+      <div style="padding-bottom: 10px;">
+      <label for="value"  >Value (in wei):</label><br>
+    </div>
       <input type="text" id="value" v-model="value">
       <br>
+      <label>Recipient Address</label> <br>
+      <select v-if="accounts && accounts.length > 0" v-model="selectedAddress">
+      <option v-for="account in accounts" :key="account" :value="account">
+        {{ account }}
+      </option>
+    </select>
       <!-- <br>
       <label for="gas">Gas Limit</label>
       <input type="text" id="gas" v-model="gas">
@@ -22,11 +34,13 @@
       <label for="gas_price">Gas Price (in wei)</label>
       <input type="text" id="gas_price" v-model="gasPrice">
       <br> -->
+      <div style="padding-top: 10px;">
       <button type="submit">Send Transaction</button>
-      
+    </div>
     </form>
-    <button @click="getAddress">Test</button>
+    <!-- <button @click="getAddress">Test</button> -->
   </div>
+</div>
 </template>
 
 <script>
@@ -34,17 +48,43 @@ import Toastify from 'toastify-js';
 import GetAccounts from './GetAccounts.vue';
 
 export default {
+
+    async mounted(){
+        await this.getAccounts();
+        await this.getAddress();
+        this.selectedAccount = accounts[0]
+    },
     data() {
         return {
-            senderAddress: "0x13ca48E880D7A28F4648eEd3B1Dc558E0D0Dc264",
+            senderAddress: localStorage.getItem('username') ? localStorage.getItem('username') : "0x13ca48E880D7A28F4648eEd3B1Dc558E0D0Dc264",
             senderPassword: "123456789",
             recipientAddress: "0xc63AB01569680E6388A7B4EbbdBaf260be9870dc",
             value: "0x20000000000000000000",
+            accounts: [],
+            selectedAccount: null,
             // gas: '',
             // gasPrice: ''
         };
     },
     methods: {
+        
+
+        
+        async getAccounts() {
+        const url = 'http://localhost:8000/get_accounts/'
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            this.accounts = data.accounts
+          })
+          .catch(error => {
+            console.error(error)
+          })
+      },
+    
+        
+
+        
         async getAddress(){
             const response = fetch("http://127.0.0.1:8000/get_address/", {
                 method: "POST", 
@@ -93,8 +133,22 @@ export default {
                 .catch(error => {
                 console.error(error);
             });
-        }
+        },
+        
     },
-    components: { GetAccounts }
+
+     components: { GetAccounts }
 };
 </script>
+
+
+<style>
+#info{
+    border-style: solid;
+    border-color: white;
+    border-radius: 25px;
+    padding: 10px;
+
+}
+
+</style>

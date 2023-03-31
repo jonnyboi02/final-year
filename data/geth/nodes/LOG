@@ -24,3 +24,13 @@
 23:11:09.300820 version@stat F·[2] S·441B[441B] Sc·[0.50]
 23:11:09.310172 db@janitor F·4 G·0
 23:11:09.310172 db@open done T·23.0871ms
+=============== Mar 29, 2023 (BST) ===============
+11:53:46.584175 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+11:53:46.589798 version@stat F·[2] S·441B[441B] Sc·[0.50]
+11:53:46.590868 db@open opening
+11:53:46.590868 journal@recovery F·1
+11:53:46.591875 journal@recovery recovering @6
+11:53:46.598351 memdb@flush created L0@8 N·1 S·162B "loc..seq,v10":"loc..seq,v10"
+11:53:46.600548 version@stat F·[3] S·603B[603B] Sc·[0.75]
+11:53:46.606962 db@janitor F·5 G·0
+11:53:46.606962 db@open done T·16.0945ms

@@ -1,21 +1,27 @@
 <template>
+    <div style="color: white;">
     <h3>Hi {{form['username'] }}</h3>
 
     <div>
         <!-- <form ref="form"> -->
-            <div>
-            Username:<input class = 'form-control' v-model='form["username"]' />
-            </div> 
-            <div>
-            Password:<input class = 'form-control' type = 'password' v-model='form["password"]'/>
-            </div>
-            <button @click="registerUser">Register</button>
+            
+            Username: <br>
+            <input class = 'form-control' v-model='form["username"]' /><br>
+            
+            Password: <br>
+            <input class = 'form-control' type = 'password' v-model='form["password"]'/> <br>
+            <br>
+                <button @click="registerUser">Register</button>
+            
+           
+            
             {{message}}
             <p v-if="accountAddress">Account Address: {{ accountAddress }}</p>
             <p v-if="check">Account Address: {{ check }}</p>
 
 
         <!-- </form> -->
+    </div>
     </div>
 
 </template>

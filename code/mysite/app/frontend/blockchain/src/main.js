@@ -54,31 +54,38 @@ export const router = createRouter({
     routes,
 })
 
-// router.beforeEach(async (to, from) => {
-//     if (
-//         user.isAuthenticated &&
-//         (to.name === 'Login' ||
-//             to.name === 'Register')
-//     ) {
-//         return {name: "Balance"}
-//     } else if (!user.isAuthenticated &&
-//         (
-//             to.name === 'Balance' ||
-//             to.name === 'Request Loan' ||
-//             to.name === 'Contracts' ||
-//             to.name === 'Send Transaction'
-//         )
-//     ) {
-//         Toastify({
-//             text: "Please login first",
-//             className: "error",
-//             style: {
-//                 background: "linear-gradient(to right, red, red)",
-//             }
-//         }).showToast();
-//         return {name: "Login"}
-//     }
-// })
+router.beforeEach(async (to, from) => {
+    if (
+        localStorage.getItem('username') &&
+        (to.name === 'Login' ||
+            to.name === 'Register')
+    ) {
+        Toastify({
+            text: "You are already logged in!",
+            style: {
+                background: "orange",
+            }
+        }).showToast();
+        return {name: "Balance"}
+    } else if (!localStorage.getItem('username') &&
+        (
+            to.name === 'Balance' ||
+            to.name === 'Request Loan' ||
+            to.name === 'Contracts' ||
+            to.name === 'Send Transaction' ||
+            to.name === 'Logout'
+        )
+    ) {
+        Toastify({
+            text: "Please login first",
+            className: "error",
+            style: {
+                background: "linear-gradient(to right, red, red)",
+            }
+        }).showToast();
+        return {name: "Login"}
+    }
+})
 
 const app = createApp(App).use(router) // mounting root instance
 app.mount('#app')

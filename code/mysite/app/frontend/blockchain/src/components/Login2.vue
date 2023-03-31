@@ -1,12 +1,13 @@
 <template>
-    <div>
-      <h1>Login</h1>
+    <div style="color: white;">
+      <h3>Login</h3>
       <form @submit.prevent="login">
-        <label>Username:</label>
+        <label>Username:</label> <br>
         <input type="text" v-model="username">
         <br>
-        <label>Password:</label>
+        <label>Password:</label> <br>
         <input type="password" v-model="password">
+        <br>
         <br>
         <button type="submit">Submit</button>
       </form>
