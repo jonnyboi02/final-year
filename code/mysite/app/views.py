@@ -270,7 +270,7 @@ def send_transaction(request):
     
     # Return the transaction hash
     transaction_hash = response.json().get('result')
-    return JsonResponse({'transaction_hash': transaction_hash})
+    return JsonResponse({'transaction': transaction_hash})
 
 def get_balance(request, account):
     pattern = r'^0x[a-fA-F0-9]{40}$'

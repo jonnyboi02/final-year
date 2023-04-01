@@ -2,10 +2,10 @@
   <div id="header">
     <h2><span style="font-weight: bold;">Welcome</span> {{ username}}</h2>
   </div>
-
-  <div id="funds">
+  <BalanceComponent ref="funds" />
+  <!-- <div id="funds">
     <p> You currently have: {{ balance }} ETH. </p>
-  </div>
+  </div> -->
 
 <div class="grid-container-element">
     <div class="grid-child-element purple" >
@@ -117,254 +117,230 @@ import Web3 from 'web3';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 import LoanABI from './contracts/LoanABI.json'
+import BalanceComponent from './BalanceComponent.vue';
 export default {
-  data() {
-    return {
-      contractAddresses: null,
-      selectedAddress: null,
-      selectedAddressLoan: null,
-      selectedAddressBuy: null,
-      loanDetails: null,
-      choices: ['Sale', 'Owned', 'Loaned'],
-      currentChoice: 'For Sale',
-      selectedItem: null,
-      contractsForSale: null,   
-      loanedContracts: null, 
-      account: null,
-      test: "ok",
-      username: "",
-      accountInstance: null,
-      loanContractInstance: null,
-    };
-  },
-
-  async mounted(){
-    await this.getAddress();
-    await this.getContract();
-    await this.getSaleContracts();
-    await this.getLoanedContracts();
-    await this.getAccountInstance();
-    await this.getBalance();
-    this.selectedAddress = this.contractAddresses[0]
-  },
-
-  methods: {
-    getBalance() {
-        // Make a GET request to the Django view URL with the account parameter
-        fetch(`http://localhost:8000/eth_balance/${this.account}/`)
-          .then(response => response.json())
-          .then(data => {
-            if (data.error) {
-              console.error(data.error);
-            } else {
-              this.balance = data.balance;
-            }
-          })
-          .catch(error => console.error(error));
-      },
-
-
-      //to fix
-
-      async buyContract(){
-        const web3 = new Web3('http://localhost:8547');
-            const accounts = await web3.eth.getAccounts();
-        this.loanContractInstance = new web3.eth.Contract(
-            LoanABI, 
-            this.selectedAddressBuy,
-          ) 
-
-          try {
-            const accounts = await web3.eth.getAccounts();
-          await this.loanContractInstance.methods.changeOwner(this.accountInstance).send({
-            from: accounts[0],
-            gas: 3000000,
-          });
-          Toastify({
-            text: `Owner Changed to` + this.accountInstance,
-            backgroundColor: 'green',
-            position: 'center',
-          }).showToast();
-        } catch (error) {
-          Toastify({
-            text: 'Error Occurred when changing owner',
-            backgroundColor: 'red',
-            position: 'center',
-          }).showToast();
-        }
-        await this.getLoanDetails()
-      },
-
-
-
-    async getAccountInstance(){
-      const web3 = new Web3('http://localhost:8547');
-      const accounts = await web3.eth.getAccounts();
-      for(let i = 0 ; i<accounts.length; i++){
-        let curAccount = accounts[i]
-        if (JSON.stringify(curAccount.toLowerCase()) === JSON.stringify(this.account.toLowerCase())){
-          this.accountInstance = curAccount
-          break;
-        }
-      }
-      //       Toastify({
-      //       text: "The contract has not been deployed yet" + this.accountInstance,
-      //       backgroundColor: 'orange',
-      //       position: 'center',
-      // }).showToast()
-      
+    data() {
+        return {
+            contractAddresses: null,
+            selectedAddress: null,
+            selectedAddressLoan: null,
+            selectedAddressBuy: null,
+            loanDetails: null,
+            choices: ["Sale", "Owned", "Loaned"],
+            currentChoice: "For Sale",
+            selectedItem: null,
+            contractsForSale: null,
+            loanedContracts: null,
+            account: null,
+            test: "ok",
+            username: "",
+            accountInstance: null,
+            loanContractInstance: null,
+        };
     },
-    async getAddress(){
-            const response = fetch("http://127.0.0.1:8000/get_address/", {
-                method: "POST", 
-                headers: {
-                'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    'username': localStorage.getItem('username'), 
-                }),
-                
-            }).then(response => response.json())
-            .then(data=>{
-                if (data.error){
-                    console.log(error)
+    async mounted() {
+        await this.getAddress();
+        await this.getBalance();
+        await this.getContract();
+        await this.getSaleContracts();
+        await this.getLoanedContracts();
+        await this.getAccountInstance();
+        this.selectedAddress = this.contractAddresses[0];
+    },
+    methods: {
+        getBalance() {
+            // Make a GET request to the Django view URL with the account parameter
+            fetch(`http://localhost:8000/eth_balance/${this.account}/`)
+                .then(response => response.json())
+                .then(data => {
+                if (data.error) {
+                    console.error(data.error);
                 }
-                else{
-                    this.account = data.key
-                    this.username = localStorage.getItem('username')
+                else {
+                    this.balance = data.balance;
                 }
             })
-          },
-    selectItem(index) {
-      this.selectedItem = index;
-      this.selectedAddress = this.contractAddresses[index]
-    },
-    selectLoanItem(index) {
-      //this.selectedItem = index;
-      this.selectedAddress = this.loanedContracts[index]
-      this.selectedAddressLoan = this.loanedContracts[index]
-    },
-    selectBuyItem(index){
-      this.selectedAddress = this.contractsForSale[index]
-      this.selectedAddressBuy = this.contractsForSale[index]
-      // Toastify({
-      //       text: "The contract has not been deployed yet",
-      //       backgroundColor: 'orange',
-      //       position: 'center',
-      // }).showToast()
-    },
+                .catch(error => console.error(error));
+        },
+        //to fix
+        async buyContract() {
+          
+          this.$refs.funds.getBalance();
 
-    async getContract() {
-      try {
-        const response = await fetch('http://127.0.0.1:8000/contracts/');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log(data); // Log the response data to the console for debugging
-        this.contractAddresses = data;
-        let set = new Set()
-        for(let i = 0; i< this.contractAddresses.length; i++){
-          set.add(this.contractAddresses[i])
-        }
-        this.contractAddresses = Array.from(set)
-      } catch (error) {
-        console.error(error); // Log any errors to the console
-      }
-    },
-    async getSaleContracts(){
-      const web3 = new Web3('http://localhost:8547');
-      const accounts = await web3.eth.getAccounts();
-      let arr = []
-      
-      for (let i = 0; i< this.contractAddresses.length; i++){
-        let address = this.contractAddresses[i]
-        try{
-            const LoanContract = new web3.eth.Contract(
-              LoanABI,
-              address,
-            );
-            let collateralHolder = this.account;
-            const result = await LoanContract.methods.getLoanDetails().call();
-
-            if (JSON.stringify(result[9].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase())){
-              arr.push(address)
+            const web3 = new Web3("http://localhost:8547");
+            const accounts = await web3.eth.getAccounts();
+            this.loanContractInstance = new web3.eth.Contract(LoanABI, this.selectedAddressBuy);
+            try {
+                const accounts = await web3.eth.getAccounts();
+                await this.loanContractInstance.methods.changeOwner(this.accountInstance).send({
+                    from: accounts[0],
+                    gas: 3000000,
+                });
+                Toastify({
+                    text: `Owner Changed to` + this.accountInstance,
+                    backgroundColor: "green",
+                    position: "center",
+                }).showToast();
             }
-        }catch(error){
-          continue;
-        }
-      }
-      this.test = arr.length
-      this.contractsForSale=arr;
-
+            catch (error) {
+                Toastify({
+                    text: "Error Occurred when changing owner",
+                    backgroundColor: "red",
+                    position: "center",
+                }).showToast();
+            }
+            await this.getLoanDetails();
+        },
+        async getAccountInstance() {
+            const web3 = new Web3("http://localhost:8547");
+            const accounts = await web3.eth.getAccounts();
+            for (let i = 0; i < accounts.length; i++) {
+                let curAccount = accounts[i];
+                if (JSON.stringify(curAccount.toLowerCase()) === JSON.stringify(this.account.toLowerCase())) {
+                    this.accountInstance = curAccount;
+                    break;
+                }
+            }
+            //       Toastify({
+            //       text: "The contract has not been deployed yet" + this.accountInstance,
+            //       backgroundColor: 'orange',
+            //       position: 'center',
+            // }).showToast()
+        },
+        async getAddress() {
+            const response = fetch("http://127.0.0.1:8000/get_address/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "username": localStorage.getItem("username"),
+                }),
+            }).then(response => response.json())
+                .then(data => {
+                if (data.error) {
+                    console.log(error);
+                }
+                else {
+                    this.account = data.key;
+                    this.username = localStorage.getItem("username");
+                }
+            });
+        },
+        selectItem(index) {
+            this.selectedItem = index;
+            this.selectedAddress = this.contractAddresses[index];
+        },
+        selectLoanItem(index) {
+            //this.selectedItem = index;
+            this.selectedAddress = this.loanedContracts[index];
+            this.selectedAddressLoan = this.loanedContracts[index];
+        },
+        selectBuyItem(index) {
+            this.selectedAddress = this.contractsForSale[index];
+            this.selectedAddressBuy = this.contractsForSale[index];
+            // Toastify({
+            //       text: "The contract has not been deployed yet",
+            //       backgroundColor: 'orange',
+            //       position: 'center',
+            // }).showToast()
+        },
+        async getContract() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/contracts/");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log(data); // Log the response data to the console for debugging
+                this.contractAddresses = data;
+                let set = new Set();
+                for (let i = 0; i < this.contractAddresses.length; i++) {
+                    set.add(this.contractAddresses[i]);
+                }
+                this.contractAddresses = Array.from(set);
+            }
+            catch (error) {
+                console.error(error); // Log any errors to the console
+            }
+        },
+        async getSaleContracts() {
+            const web3 = new Web3("http://localhost:8547");
+            const accounts = await web3.eth.getAccounts();
+            let arr = [];
+            for (let i = 0; i < this.contractAddresses.length; i++) {
+                let address = this.contractAddresses[i];
+                try {
+                    const LoanContract = new web3.eth.Contract(LoanABI, address);
+                    let collateralHolder = this.account;
+                    const result = await LoanContract.methods.getLoanDetails().call();
+                    if (JSON.stringify(result[9].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase())) {
+                        arr.push(address);
+                    }
+                }
+                catch (error) {
+                    continue;
+                }
+            }
+            this.test = arr.length;
+            this.contractsForSale = arr;
+        },
+        async getLoanedContracts() {
+            const web3 = new Web3("http://localhost:8547");
+            const accounts = await web3.eth.getAccounts();
+            let arr = [];
+            for (let i = 0; i < this.contractAddresses.length; i++) {
+                let address = this.contractAddresses[i];
+                try {
+                    const LoanContract = new web3.eth.Contract(LoanABI, address);
+                    let collateralHolder = this.account;
+                    const result = await LoanContract.methods.getLoanDetails().call();
+                    // this.test = result[9]
+                    // this.test = result[9].length + ", "+collateralHolder.length
+                    if (JSON.stringify(result[9].toLowerCase()) === JSON.stringify(collateralHolder.toLowerCase())) {
+                        // this.test = result[9]
+                        arr.push(address);
+                    }
+                }
+                catch (error) {
+                    continue;
+                }
+            }
+            //this.test = arr.length
+            this.loanedContracts = arr;
+        },
+        async getLoanDetails() {
+            try {
+                const web3 = new Web3("http://localhost:8547");
+                const accounts = await web3.eth.getAccounts();
+                // const web3 = new Web3('http://localhost:8545');
+                const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddress);
+                const result = await LoanContract.methods.getLoanDetails().call();
+                this.loanDetails = {
+                    borrower: result[0],
+                    lender: result[1],
+                    owner: result[2],
+                    amount: result[3],
+                    rate: result[4],
+                    duration: result[5],
+                    dueDate: result[6],
+                    isRepaid: result[7],
+                    collateralAmount: result[8],
+                    collateralHolder: result[9],
+                    collateralUrl: result[10],
+                    price: result[11],
+                };
+            }
+            catch (error) {
+                Toastify({
+                    text: "The contract has not been deployed yet",
+                    backgroundColor: "orange",
+                    position: "center",
+                });
+            }
+        },
     },
-
-    async getLoanedContracts(){
-      const web3 = new Web3('http://localhost:8547');
-      const accounts = await web3.eth.getAccounts();
-      let arr = []
-     
-      for (let i = 0; i< this.contractAddresses.length; i++){
-        let address = this.contractAddresses[i];
-        try{
-            const LoanContract = new web3.eth.Contract(
-            LoanABI,
-            address,
-          );
-          let collateralHolder = this.account;
-          const result = await LoanContract.methods.getLoanDetails().call();
-          // this.test = result[9]
-          // this.test = result[9].length + ", "+collateralHolder.length
-          if (JSON.stringify(result[9].toLowerCase()) === JSON.stringify(collateralHolder.toLowerCase())){
-            // this.test = result[9]
-            arr.push(address)
-          }
-        }catch(error){
-          continue;
-        }
-        
-
-      }
-      //this.test = arr.length
-      this.loanedContracts=arr;
-      
-
-    },
-    async getLoanDetails(){
-        try{
-          const web3 = new Web3('http://localhost:8547');
-          const accounts = await web3.eth.getAccounts();
-        // const web3 = new Web3('http://localhost:8545');
-        const LoanContract = new web3.eth.Contract(
-          LoanABI,
-          this.selectedAddress,
-        );
-          const result = await LoanContract.methods.getLoanDetails().call();
-          this.loanDetails = {
-            borrower: result[0],
-            lender: result[1],
-            owner: result[2],
-            amount: result[3],
-            rate: result[4],
-            duration: result[5],
-            dueDate: result[6],
-            isRepaid: result[7],
-            collateralAmount: result[8],
-            collateralHolder: result[9],
-            collateralUrl: result[10],
-            price: result[11],
-          };
-        }catch (error){
-          Toastify({
-            text: "The contract has not been deployed yet",
-            backgroundColor: 'orange',
-            position: 'center',
-          })
-        }
-
-      },
-
-  },
+    components: { BalanceComponent }
 };
 </script>
 
