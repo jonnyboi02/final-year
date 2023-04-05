@@ -42,7 +42,7 @@
       <div style="padding-top: 10px;">
       <button type="submit">Send Transaction</button>
 
-      {{ output }}
+      <!-- {{ output }} -->
     </div>
     </form>
 
@@ -69,7 +69,7 @@ export default {
             senderAddress: localStorage.getItem('username') ? localStorage.getItem('username') : "0x13ca48E880D7A28F4648eEd3B1Dc558E0D0Dc264",
             senderPassword: "123456789",
             recipientAddress: "0xc63AB01569680E6388A7B4EbbdBaf260be9870dc",
-            value: "0x20000000000000000000",
+            value: "",
             accounts: [],
             selectedAccount: null,
             output: "hey",

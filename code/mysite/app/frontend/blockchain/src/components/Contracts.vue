@@ -9,18 +9,18 @@
 
 <div class="grid-container-element">
     <div class="grid-child-element purple" >
-        <h3 style="color: white;">List of Smart Contracts</h3>
+        <h3 style="color: white;">List of Owned Contracts</h3>
         <!-- <select v-model="currentChoice" style="padding-left: 145px;padding-right: 145px;">
               <option v-for="choice in choices" :key="choice" :value="choice" style="">
                 {{ choice }}
               </option>
         </select> -->
 
-      <div  v-if=true>
+      <div  v-if="ownedContracts && ownedContracts.length>0">
           <nav id="lists" style="margin-left: 0px; color: white; padding-top: 20px;">
-            <ul v-if="contractAddresses && contractAddresses.length > 0"  >
+            <ul v-if="ownedContracts && contractAddresses.length > 0"  >
               <div style="padding-bottom: 100px;">
-                <li v-for="(address, index) in contractAddresses" :key="address" :value="address" @click="selectItem(index)" style="padding: 2px; border-style: solid; border-radius: 20px; align: center; padding-left: 20px; padding-right: 15px; ">
+                <li v-for="(address, index) in ownedContracts" :key="address" :value="address" @click="selectItem(index)" style="padding: 2px; border-style: solid; border-radius: 20px; align: center; padding-left: 20px; padding-right: 15px; ">
                   {{  address }}
                 </li>
               </div>
@@ -31,6 +31,12 @@
           <p v-else class='message'>Select a smart contract address</p>
           <button @click="getLoanDetails">Get Contract Details</button> 
 
+
+      </div>
+      <div v-else>
+        <ul style="margin-left: 20px; color: white; padding-top: 20px;">
+            <li style="padding-left: 100px; padding-right: 100px; border-style: solid; border-radius: 25px;">No contracts Owned</li>
+        </ul>
 
       </div>
 
@@ -48,8 +54,9 @@
               Collateral Amount: {{ loanDetails.collateralAmount }}<br>
               Collateral Holder: {{ loanDetails.collateralHolder }}<br>
               Collateral URL : {{loanDetails.collateralUrl }} <br>
-              Contract Price : {{loanDetails.price  }}<br>
+              <!-- Contract Price : {{loanDetails.price  }}<br> -->
             </p>
+            <p v-if = 'loanDetails' style="border-style: solid; border-radius: 25px; border-color: white; border-width: thin;"><span style="color: white; text-decoration: underline; ">Contract Price: {{ loanDetails.price  }} ETH</span></p>
     </div>
 
     <div class="grid-child-element purple" style="color: white;">
@@ -70,7 +77,11 @@
           <!-- {{ loanedContracts }} -->
                     <!-- <p v-if="selectedItem !== null" class='message'>You have selected: {{ contractsForSale[selectedItem] }}</p> -->
           <!-- <p v-else class='message'>Select a smart contract address</p> -->
-          
+          <!-- <p v-if="selectedItem" class='message'>
+            You have selected: {{ contractAddresses[selectedItem] }}
+          </p> -->
+          <br>
+          <!-- <p v-else class='message'>Select a smart contract address</p> -->
           <button @click="getLoanDetails" class = 'btn'>Get Contract Details</button> 
           <button class = 'btn'>Repay Loan</button>
           
@@ -99,8 +110,9 @@
           
           <!-- <p v-if="selectedItem !== null" class='message'>You have selected: {{ contractsForSale[selectedItem] }}</p> -->
           <!-- <p v-else class='message'>Select a smart contract address</p> -->
-          {{ selectedAddressBuy }}
+          <!-- You have selected: {{ selectedAddressBuy }} -->
           {{ loanContractInstance }}
+          <br>
           <button @click="getLoanDetails"  class = 'btn'>Get Contract Details</button> 
           <button class = 'btn' @click="buyContract" > Purchase contract</button>
           
@@ -108,6 +120,7 @@
       
 
     {{ test }}
+    {{ selectedItem}}
 </div>
 
 </template>
@@ -131,6 +144,7 @@ export default {
             selectedItem: null,
             contractsForSale: null,
             loanedContracts: null,
+            ownedContracts: null,
             account: null,
             test: "ok",
             username: "",
@@ -141,13 +155,37 @@ export default {
     async mounted() {
         await this.getAddress();
         await this.getBalance();
-        await this.getContract();
+        await this.getContract(); 
+        await this.getOwnedContracts();
         await this.getSaleContracts();
         await this.getLoanedContracts();
         await this.getAccountInstance();
+        await this.getOwnedContracts();
         this.selectedAddress = this.contractAddresses[0];
     },
     methods: {
+
+      async getOwnedContracts(){
+        const web3 = new Web3("http://localhost:8547");
+            const accounts = await web3.eth.getAccounts();
+            let arr = [];
+            for (let i = 0; i < this.contractAddresses.length; i++) {
+                let address = this.contractAddresses[i];
+                try {
+                    const LoanContract = new web3.eth.Contract(LoanABI, address);
+                    let collateralHolder = this.account;
+                    const result = await LoanContract.methods.getLoanDetails().call();
+                    if (JSON.stringify(result[9].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase()) && JSON.stringify(result[2].toLowerCase()) === JSON.stringify(collateralHolder.toLowerCase())) {
+                        arr.push(address);
+                    }
+                }
+                catch (error) {
+                    continue;
+                }
+            }
+            this.ownedContracts = arr;
+        
+      },
         getBalance() {
             // Make a GET request to the Django view URL with the account parameter
             fetch(`http://localhost:8000/eth_balance/${this.account}/`)
@@ -165,7 +203,7 @@ export default {
         //to fix
         async buyContract() {
           
-          this.$refs.funds.getBalance();
+          // this.$refs.funds.getBalance();
 
             const web3 = new Web3("http://localhost:8547");
             const accounts = await web3.eth.getAccounts();
@@ -229,7 +267,7 @@ export default {
         },
         selectItem(index) {
             this.selectedItem = index;
-            this.selectedAddress = this.contractAddresses[index];
+            this.selectedAddress = this.ownedContracts[index]//this.contractAddresses[index];
         },
         selectLoanItem(index) {
             //this.selectedItem = index;
@@ -362,6 +400,7 @@ export default {
   border-radius: 25px ;
   margin-left: 15px;
   margin-right: 15px;
+  border-width: thin;
 }
 
 

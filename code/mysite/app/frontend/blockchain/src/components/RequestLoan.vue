@@ -5,6 +5,13 @@
       {{borrower.address}}
     </div> -->
     <h3>Request Loan</h3>
+    <div id = 'header'>
+      <div id='contents' style="border-style: solid; border-radius: 25px">
+        <h4> Current Annual Interest rate is {{ form.rate }}%</h4>
+
+      </div>
+
+    </div>
     <div v-if="loanContractAddress " id="deploy" > Contract Deployed at : {{ loanContractAddress }} </div>
     <div style="padding-bottom: 10px; ">
       <!-- form:{
@@ -17,10 +24,10 @@
           price: 10,
         } -->
      
-        Amount of Loan: <br> <input  v-model="form.amount"/>
+        Amount of Loan (in Ethers): <br> <input  v-model="form.amount"/>
         <br>
-        Rate: <br><input  v-model="form.rate"/>
-        <br>
+        <!-- Rate: <br><input  v-model="form.rate"/>
+        <br> -->
         Duration: <br>
         <select v-model="currentDuration" @change="durationToSeconds" style="padding-left: 45px;padding-right: 45px;">
           <!--Need to set the form.duration stuff -->
@@ -83,6 +90,7 @@
   import LoanABI from './contracts/LoanABI.json'
   export default {
     mounted(){
+      this.getAccounts();
       this.getAddress();
       this.durationToSeconds();
     },
@@ -98,7 +106,7 @@
         currentDuration: '3 Months',
         form:{
           amount: 100,
-          rate: 10,
+          rate: 3,
           duration: 3600,
           collateralAmount: 200,
           collateralHolder: null,
@@ -106,10 +114,32 @@
 
           //0.5 Ether as default price
           price: 500,
-        }
+        },
+        value: "",
       };
     },
     methods: {
+      ethToWei(){
+        const check = /^[0-9.]+$/;
+          if (check.test(this.value)){
+            try{
+              const weiAmount = Web3.utils.toWei(this.form.amount.toString(), 'ether')/10**3;
+              const weiAmountWithPrefix = '0x' + weiAmount;
+              this.value = weiAmountWithPrefix
+
+            }catch{
+              Toastify({
+                      text: "Value must be decimals!",
+                      duration: 3000,
+                      close: true,
+                      backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                      stopOnFocus: true
+                  }).showToast();
+                  return;
+            }
+          }
+      },
+
       durationToSeconds(){
         if (this.currentDuration === '3 Months'){
           this.form.duration = 3*30*24*60*60
@@ -185,6 +215,81 @@
 
 
       },
+
+      //used to issue the transaction
+      sendTransaction() {
+          //checking the data to make sure it is good
+          if (this.form.amount===""){
+            Toastify({
+                      text: "Value cannot be empty!",
+                      duration: 3000,
+                      close: true,
+                      backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                      stopOnFocus: true
+                  }).showToast();
+                  return;
+          }
+          const check = /^[0-9.]+$/;
+     
+          if (check.test(this.form.amount)){
+            try{
+              const weiAmount = Web3.utils.toWei(this.form.amount.toString(), 'ether')/10**3;
+              const weiAmountWithPrefix = '0x' + weiAmount;
+              this.value = weiAmountWithPrefix
+
+            }catch{
+              Toastify({
+                      text: "Value must be decimals!",
+                      duration: 3000,
+                      close: true,
+                      backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                      stopOnFocus: true
+                  }).showToast();
+                  return;
+            }
+          }
+
+          const regex2 = /^0x[0-9a-fA-F]+$/;
+         // this.output=this.value
+
+            const data = {
+                sender_address: this.accounts[0],
+                sender_password: "123456789",
+                recipient_address: this.form.collateralHolder,
+                value: this.value,
+            };
+            fetch("http://127.0.0.1:8000/send_transaction/", {
+                method: "POST",
+                body: new URLSearchParams(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                console.log(data);
+                this.output =data;
+                if (data.transaction==null){
+                  Toastify({
+                      text: "Insuffient funds",
+                      duration: 3000,
+                      close: true,
+                      backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                      stopOnFocus: true
+                  }).showToast();
+
+                }
+                else{
+                  // Toastify({
+                  //     text: "Transaction sent successfully!",
+                  //     duration: 3000,
+                  //     close: true,
+                  //     backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                  //     stopOnFocus: true
+                  // }).showToast();
+              }
+            })
+                .catch(error => {
+                console.error(error);
+            });
+        },
       async changeOwner(){
           try {
             const web3 = new Web3('http://localhost:8547');
@@ -209,6 +314,16 @@
         
       },
       async deployLoanContract(){
+        
+        if (this.form.collateralAmount/this.form.amount<0.75){
+          Toastify({
+            text: "Please contribute a higher value NFT",
+            backgroundColor: 'red',
+            position: 'center',
+          }).showToast();
+          return
+        }
+        this.sendTransaction();
         const web3 = new Web3('http://localhost:8547');
         const accounts = await web3.eth.getAccounts();
         const networkId = await web3.eth.net.getId();
@@ -326,6 +441,11 @@
     background: rgb(0,0,0);
 background: linear-gradient(90deg, rgba(0,0,0,1) 0%, rgba(1,221,15,1) 100%, rgba(255,255,255,1) 100%);
     
+  }
+
+  #header #contents{
+    border-style: solid,
+
   }
 
   .button{
