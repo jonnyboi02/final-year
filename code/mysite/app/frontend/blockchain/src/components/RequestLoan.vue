@@ -5,13 +5,13 @@
       {{borrower.address}}
     </div> -->
     <h3>Request Loan</h3>
-    <div id = 'header'>
-      <div id='contents' style="border-style: solid; border-radius: 25px">
+    <!-- <div id = 'header'> -->
+      <div id='contents' style="border-style: solid; border-radius: 25px; border-width: thin;">
         <h4> Current Annual Interest rate is {{ form.rate }}%</h4>
 
       </div>
 
-    </div>
+    <!-- </div> -->
     <div v-if="loanContractAddress " id="deploy" > Contract Deployed at : {{ loanContractAddress }} </div>
     <div style="padding-bottom: 10px; ">
       <!-- form:{
@@ -43,8 +43,19 @@
         <!-- Borrower Address: <br><input v-model="form.collateralHolder"/>
         <br> -->
         Desired Price of Contract (in Ethers):<br> <input v-model="form.price"/>
+        <br>
+        Upload Collateral:
+        <br>
+        <!-- <button> Upload </button> -->
+        <input style="margin-left: 60px;" type="file" @change="handleFileUpload" />
 
 
+
+    </div>
+    <div style="padding-bottom: 10px; ">       
+      <!-- <button class="button"  >Upload NFT</button> -->
+      <!-- <button @click="changeOwner" class="button" style="float: right; ">Change Contract Owner</button>
+      <button @click="getLoanDetails">Get Contract Details</button>  -->
     </div>
 
     <div style="padding-bottom: 10px; ">       
@@ -53,9 +64,9 @@
       <button @click="getLoanDetails">Get Contract Details</button>  -->
     </div>
 
-    <div style="padding-bottom: 10px; ">
+    <!-- <div style="padding-bottom: 10px; ">
       <button @click="changeOwner" class="button">Change Contract Owner</button>
-    </div>
+    </div> -->
     <div style="padding-bottom: 10px; ">
       <button >Get Contract Details</button> 
       <p v-if="loanDetails">
@@ -104,6 +115,7 @@
         borrower: null,
         options: ['3 Months', '6 Months', '1 Year', '2 Years'],
         currentDuration: '3 Months',
+        nftFile: null,
         form:{
           amount: 100,
           rate: 3,
@@ -119,6 +131,9 @@
       };
     },
     methods: {
+      handleFileUpload(event) {
+      this.nftFile = event.target.files[0];
+    },
       ethToWei(){
         const check = /^[0-9.]+$/;
           if (check.test(this.value)){

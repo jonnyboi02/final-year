@@ -230,6 +230,7 @@ export default {
     border-color: white;
     border-radius: 25px;
     padding: 10px;
+    border-width: thin;
 
 }
 
