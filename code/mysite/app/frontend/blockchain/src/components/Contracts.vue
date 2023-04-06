@@ -312,7 +312,7 @@ export default {
                     const LoanContract = new web3.eth.Contract(LoanABI, address);
                     let collateralHolder = this.account;
                     const result = await LoanContract.methods.getLoanDetails().call();
-                    if (JSON.stringify(result[9].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase())) {
+                    if (JSON.stringify(result[9].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase()) && JSON.stringify(result[2].toLowerCase())!==JSON.stringify(collateralHolder.toLowerCase())) {
                         arr.push(address);
                     }
                 }
