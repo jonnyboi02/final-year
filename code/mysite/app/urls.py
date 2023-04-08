@@ -16,7 +16,7 @@ Including another URLconf
 #from django.contrib import admin
 from django.urls import path, include
 from . import views
-from .views import register, upload_NFT, create_account, get_accounts, send_transaction, login_view, get_balance, account_info, login_view2, getAddress, contractAPI
+from .views import register, upload_NFT, create_account, get_accounts, send_transaction, login_view, get_balance, account_info, login_view2, getAddress, contractAPI, upload_file
 
 app_name = 'app'
 
@@ -35,6 +35,7 @@ urlpatterns = [
      path('login2/', login_view2),
      path('get_address/', getAddress),
      path('contracts/', contractAPI),
+     path('generate-url/', upload_file),
      #path('contracts/', get_all_contracts)
    # path('deploy_contract/', deploy_contract)
 

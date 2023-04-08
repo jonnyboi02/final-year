@@ -64,6 +64,8 @@
       <button @click="getLoanDetails">Get Contract Details</button>  -->
     </div>
 
+    <!-- <button>Generate URL</button> -->
+    {{ test }}
     <!-- <div style="padding-bottom: 10px; ">
       <button @click="changeOwner" class="button">Change Contract Owner</button>
     </div> -->
@@ -99,6 +101,7 @@
   
 
   import LoanABI from './contracts/LoanABI.json'
+  import {Buffer } from 'buffer';
   export default {
     mounted(){
       this.getAccounts();
@@ -128,6 +131,7 @@
           price: 500,
         },
         value: "",
+        test: "hi",
       };
     },
     methods: {
@@ -392,6 +396,7 @@
           //   backgroundColor: 'green',
           //   position: 'center',
           // }).showToast();
+          await this.generateURL();
             const args = [
               this.form.amount, // amount
               this.form.rate, // rate
@@ -403,6 +408,8 @@
             ];
 
         try{
+
+          //deploys the smart contract
           const contract = await LoanContract.deploy({
             arguments: args
           }).send(options);
@@ -422,6 +429,22 @@
                 }),
 
           })
+
+          // this.test=this.generateURL();
+          // this.generateURL();
+          //read in the collateral
+          const fileReader = new FileReader();
+          // const buffer = await new Promise((resolve) => {
+          //   fileReader.onload = (event) => (Buffer.from(event.target.result));
+          //   fileReader.readAsArrayBuffer(this.nftFile);
+          // });
+
+          // const result = await this.loanContractInstance.methods.mint(accounts[0], buffer).send({from: accounts[0]});
+
+        
+          // this.test = await JSON.Stringify(this.loanContractInstance.methods.ownerOf(0).call());
+
+          //displays the message for a contract that has been deployed
           Toastify({
             text: `Deployed loan contract ` + this.loanContractAddress +" "+ this.form.collateralHolder ,
             backgroundColor: 'green',
@@ -440,9 +463,19 @@
           }
         }
 
-
-
       },
+      async generateURL() {
+        const formData = new FormData();
+        formData.append("file", this.nftFile);
+        const response = await fetch("http://localhost:8000/generate-url/", {
+          method: "POST",
+          body: formData
+        });
+        const data = await response.json();
+        this.test = data.url;
+        this.form.collateralUrl = data.url;
+    }
+
 
      
     },

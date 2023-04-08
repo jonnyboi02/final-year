@@ -1,4 +1,5 @@
 import subprocess
+import uuid
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 
@@ -13,6 +14,11 @@ import requests
 from web3 import Web3
 from solcx import compile_source, install_solc, set_solc_version
 from rest_framework.authtoken.models import Token
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.conf import settings
+import os
+import uuid
 
 import re
 #from web3 import Web3
@@ -20,17 +26,62 @@ import re
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
-def upload_collateral(request):
-    if request.method == 'POST':
-        form = NFTForm(request.POST, request.FILES)
-        if form.is_valid():
-            nft = form.save(commit=False)
-            nft.user = request.user
-            nft.save()
-            return HttpResponseRedirect('/success/')
+
+# def upload_file(request):
+#     if request.method == 'POST' and request.FILES['file']:
+#         # generate a unique filename for the uploaded file
+#         filename = str(uuid.uuid4())
+#         # get the file object from the request
+#         file = request.FILES['file']
+#         # save the file to the media directory
+#         path = os.path.join(settings.MEDIA_ROOT, filename)
+#         with open(path, 'wb') as f:
+#             for chunk in file.chunks():
+#                 f.write(chunk)
+#         # generate a URL for the uploaded file
+#         url = request.build_absolute_uri(settings.MEDIA_URL + filename)
+#         return HttpResponse(url)
+#     else:
+#         return render(request, 'upload.html')
+def upload_file(request):
+    if request.method == 'POST' and request.FILES['file']:
+        # get the file object from the request
+        file = request.FILES['file']
+        filename, ext = os.path.splitext(file.name)
+        ext = ext.lower()
+
+        # set the media directory
+        media_dir = os.path.join(settings.BASE_DIR, 'media')
+        # create the media directory if it doesn't exist
+        if not os.path.exists(media_dir):
+            os.makedirs(media_dir)
+
+        # save the file to the media directory
+        path = os.path.join(media_dir, filename + ext)
+        with open(path, 'wb') as f:
+            for chunk in file.chunks():
+                f.write(chunk)
+
+        # generate a URL for the uploaded file
+        url = request.build_absolute_uri('/') + f'media/{filename}{ext}'
+
+        # return the URL as JSON
+        return JsonResponse({'url': url})
     else:
-        form = NFTForm()
-    return render(request, 'upload.html', {'form': form})
+        return render(request, 'upload.html')
+
+
+# def upload_collateral(request):
+#     if request.method == 'POST':
+#         form = NFTForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             nft = form.save(commit=False)
+#             nft.user = request.user
+#             nft.save()
+#             return HttpResponseRedirect('/success/')
+#     else:
+#         form = NFTForm()
+#     return render(request, 'upload.html', {'form': form})
 
 
 @csrf_exempt
