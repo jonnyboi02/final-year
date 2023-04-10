@@ -47,6 +47,7 @@ import "toastify-js/src/toastify.css"
             localStorage.setItem('token', data.token);
             localStorage.setItem('username', this.username); 
             localStorage.setItem('password', this.password);
+            
 
             this.$router.push('/dashboard');
             Toastify({

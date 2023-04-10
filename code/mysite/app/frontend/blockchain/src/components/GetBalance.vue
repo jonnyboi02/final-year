@@ -17,7 +17,7 @@
 
     data() {
       return {
-        account:this.getAddress() ? this.getAddress :  '0x13ca48E880D7A28F4648eEd3B1Dc558E0D0Dc264',
+        account:this.getAddress() ? this.getAddress() :  '0x13ca48E880D7A28F4648eEd3B1Dc558E0D0Dc264',
         
         balance: null,
       };

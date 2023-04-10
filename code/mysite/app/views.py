@@ -43,6 +43,12 @@ def index(request):
 #         return HttpResponse(url)
 #     else:
 #         return render(request, 'upload.html')
+def get_nft_address(request):
+    json_data = request.body
+    body = json.loads(json_data)
+    
+
+
 def upload_file(request):
     if request.method == 'POST' and request.FILES['file']:
         # get the file object from the request

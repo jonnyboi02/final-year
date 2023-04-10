@@ -1,5 +1,7 @@
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
 contract Loan {
     address public borrower;
     address public lender;
@@ -96,5 +98,9 @@ contract Loan {
             isRepaid = true;
             payable(collateralHolder).transfer(collateralAmount);
         }
+    }
+
+    function mint(address _to, bytes memory _nftData) public returns (uint256) {
+        _safeMint(_to, 0);
     }
 }
