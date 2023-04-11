@@ -55,12 +55,12 @@
 	},
 	{
 		"inputs": [],
-		"name": "borrower",
+		"name": "amountReceived",
 		"outputs": [
 			{
-				"internalType": "address",
+				"internalType": "uint256",
 				"name": "",
-				"type": "address"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -163,11 +163,6 @@
 		"outputs": [
 			{
 				"internalType": "address",
-				"name": "_borrower",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
 				"name": "_lender",
 				"type": "address"
 			},
@@ -219,6 +214,11 @@
 			{
 				"internalType": "uint256",
 				"name": "_price",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_amountReceived",
 				"type": "uint256"
 			}
 		],
@@ -298,10 +298,7 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "repayLoan",
-		"outputs": [],
 		"stateMutability": "payable",
-		"type": "function"
+		"type": "receive"
 	}
 ]

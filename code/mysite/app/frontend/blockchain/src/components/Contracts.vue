@@ -41,9 +41,11 @@
       </div>
 
     </div>
-    <div class="grid-child-element green">
+    <div class="grid-child-element green" >
+      <div v-if="loanDetails">
+      <p v-if = 'dayToPay' style="border-style: solid; border-radius: 25px; border-color: white; border-width: thin; color: white">The loan is due to be paid: {{ dayToPay }}</p>
       <p v-if="loanDetails" style="color: white;">
-              Borrower: {{ loanDetails.borrower }}<br>
+              <!-- Borrower: {{ loanDetails.borrower }}<br> -->
               Lender: {{ loanDetails.lender }}<br>
               Owner: {{ loanDetails.owner }}<br>
               Amount: {{ loanDetails.amount }}<br>
@@ -52,11 +54,23 @@
               Due Date: {{ loanDetails.dueDate }}<br>
               Is Repaid: {{ loanDetails.isRepaid }}<br>
               Collateral Amount: {{ loanDetails.collateralAmount }}<br>
-              Collateral Holder: {{ loanDetails.collateralHolder }}<br>
-              Collateral URL : {{loanDetails.collateralUrl }} <br>
+              Amount Received: {{ loanDetails.amountreceived }}
+              <!-- Collateral Holder: {{ loanDetails.collateralHolder }}<br> -->
+              <!-- Collateral URL : {{loanDetails.collateralUrl }} <br> -->
               <!-- Contract Price : {{loanDetails.price  }}<br> -->
             </p>
             <p v-if = 'loanDetails' style="border-style: solid; border-radius: 25px; border-color: white; border-width: thin;"><span style="color: white; text-decoration: underline; ">Contract Price: {{ loanDetails.price  }} ETH</span></p>
+          </div>
+          <button @click="getNFT" v-if="loanDetails">View NFT</button>
+          <!-- <v-alert
+            :value="alert.show"
+            :type="alert.type"
+            :close-text="alert.dismissLabel"
+            @input="alert.show = false"
+            @click:close="onCloseAlert"
+          >
+            {{ alert.message }}
+          </v-alert> -->
     </div>
 
     <div class="grid-child-element purple" style="color: white;">
@@ -84,6 +98,7 @@
           <!-- <p v-else class='message'>Select a smart contract address</p> -->
           <button @click="getLoanDetails" class = 'btn'>Get Contract Details</button> 
           <button class = 'btn'>Repay Loan</button>
+       
           
           
          
@@ -118,9 +133,10 @@
           
       </div>
       
-
+<!-- 
     {{ test }}
-    {{ selectedItem}}
+    {{ selectedItem}} -->
+    {{ account }}
 </div>
 
 </template>
@@ -131,6 +147,41 @@ import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 import LoanABI from './contracts/LoanABI.json'
 import BalanceComponent from './BalanceComponent.vue';
+import nftABI from './contracts/MyNFT.json'
+ 
+//function to convert the unix time into normal date
+const unixToDate = (unixTime) => {
+  const date = new Date(unixTime * 1000);
+
+  // use the Date object's built-in methods to extract the date components
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+
+  // construct the date string using the extracted components
+  const dateString = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  return dateString;
+}
+
+function getDaysLeft(startDateUnix, endDateUnix) {
+  // convert Unix timestamps to Date objects
+  const startDate = new Date(startDateUnix * 1000);
+  const endDate = new Date(endDateUnix * 1000);
+
+  // calculate the difference in milliseconds between the two dates
+  const diffMillis = endDate.getTime() - startDate.getTime();
+
+  // calculate the number of days between the two dates and round down to the nearest integer
+  const diffDays = Math.floor(diffMillis / (1000 * 60 * 60 * 24));
+
+  // return the number of days left
+  return diffDays;
+}
+
+
 export default {
     data() {
         return {
@@ -150,6 +201,14 @@ export default {
             username: "",
             accountInstance: null,
             loanContractInstance: null,
+            dayToPay: null,
+            alert:{
+              message: "",
+              show: false,
+              type: 'success',
+              dismissLabel: 'Dismiss',
+            }
+          
         };
     },
     async mounted() {
@@ -164,6 +223,41 @@ export default {
         this.selectedAddress = this.contractAddresses[0];
     },
     methods: {
+      //retrive NFT url from smart contract
+      async getNFT(){
+        const web3 = new Web3("http://localhost:8547");
+        const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddress);
+        const result = await LoanContract.methods.getLoanDetails().call();
+        const NFTid = result[9]
+        const req = await fetch("http://127.0.0.1:8000/get_nft_address/");
+        let data = await req.json()
+        let NFTaddress = data.address;
+
+        let NFTcontract = new web3.eth.Contract(nftABI, NFTaddress);
+        // Toastify({
+        //     text: "hi",
+        //     backgroundColor: "green",
+        //     position: "center",
+        // }).showToast();
+        let NFTurl = await NFTcontract.methods.tokenURI(NFTid).call()
+        let msg = document.createElement("div");
+        //msg.innerHTML = "The NFT is available: <a href='" + NFTurl + "' target='_blank'>" + NFTurl + "</a> under id: " + NFTid;
+
+        Toastify({
+          text: "Click here to view the NFT for "+this.selectedAddress+" Contract!",
+          backgroundColor: "green",
+          position: "center",
+          duration: 3000,
+          gravity: "bottom",
+          offset: { y: 100 },
+          onClick: function() {
+            window.open(NFTurl, "_blank");
+          }
+        }).showToast();
+      },
+
+      
+
 
       async getOwnedContracts(){
         const web3 = new Web3("http://localhost:8547");
@@ -175,7 +269,7 @@ export default {
                     const LoanContract = new web3.eth.Contract(LoanABI, address);
                     let collateralHolder = this.account;
                     const result = await LoanContract.methods.getLoanDetails().call();
-                    if (JSON.stringify(result[9].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase()) && JSON.stringify(result[2].toLowerCase()) === JSON.stringify(collateralHolder.toLowerCase())) {
+                    if (JSON.stringify(result[8].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase()) && JSON.stringify(result[1].toLowerCase()) === JSON.stringify(collateralHolder.toLowerCase())) {
                         arr.push(address);
                     }
                 }
@@ -312,7 +406,7 @@ export default {
                     const LoanContract = new web3.eth.Contract(LoanABI, address);
                     let collateralHolder = this.account;
                     const result = await LoanContract.methods.getLoanDetails().call();
-                    if (JSON.stringify(result[9].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase()) && JSON.stringify(result[2].toLowerCase())!==JSON.stringify(collateralHolder.toLowerCase())) {
+                    if (JSON.stringify(result[8].toLowerCase()) !== JSON.stringify(collateralHolder.toLowerCase()) && JSON.stringify(result[1].toLowerCase())===JSON.stringify(accounts[0].toLowerCase())) {
                         arr.push(address);
                     }
                 }
@@ -335,7 +429,7 @@ export default {
                     const result = await LoanContract.methods.getLoanDetails().call();
                     // this.test = result[9]
                     // this.test = result[9].length + ", "+collateralHolder.length
-                    if (JSON.stringify(result[9].toLowerCase()) === JSON.stringify(collateralHolder.toLowerCase())) {
+                    if (JSON.stringify(result[8].toLowerCase()) === JSON.stringify(collateralHolder.toLowerCase())) {
                         // this.test = result[9]
                         arr.push(address);
                     }
@@ -354,20 +448,40 @@ export default {
                 // const web3 = new Web3('http://localhost:8545');
                 const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddress);
                 const result = await LoanContract.methods.getLoanDetails().call();
+
+                //What the user would see when they get the details of a page
+                // this.loanDetails = {
+                //     borrower: result[0],
+                //     lender: result[1],
+                //     owner: result[2],
+                //     amount: result[3],
+                //     rate: result[4],
+                //     duration: getDaysLeft((result[6]-result[5]), (result[6])) + " days",
+                //     dueDate: unixToDate(result[6]),
+                //     isRepaid: result[7] ? "Yes" : "No",
+                //     collateralAmount: result[8],
+                //     collateralHolder: result[9],
+                //     collateralUrl: result[10],
+                //     price: result[11],
+                // };
                 this.loanDetails = {
-                    borrower: result[0],
-                    lender: result[1],
-                    owner: result[2],
-                    amount: result[3],
-                    rate: result[4],
-                    duration: result[5],
-                    dueDate: result[6],
-                    isRepaid: result[7],
-                    collateralAmount: result[8],
-                    collateralHolder: result[9],
-                    collateralUrl: result[10],
-                    price: result[11],
-                };
+                    lender: result[0],
+                    owner: result[1],
+                    amount: result[2],
+                    rate: result[3],
+                    duration: getDaysLeft((result[5]-result[4]), (result[5])) + " days",
+                    dueDate: unixToDate(result[5]),
+                    isRepaid: result[6] ? "Yes" : "No",
+                    collateralAmount: result[7],
+                    collateralHolder: result[8],
+                    collateralUrl: result[9],
+                    price: result[10],
+                    amountreceived: result[11]
+
+                }
+                this.dayToPay = getDaysLeft((Math.floor(Date.now() / 1000)), (result[5])) + " days";
+
+
             }
             catch (error) {
                 Toastify({
@@ -412,6 +526,7 @@ export default {
 
 .btn{
   margin-right: 10px;
+  margin-bottom: 10px;
 }
 
 #lists{

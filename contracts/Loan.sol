@@ -1,6 +1,5 @@
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Loan {
     address public borrower;
@@ -15,6 +14,7 @@ contract Loan {
     address public collateralHolder;
     string public collateralUrl;
     uint public price;
+    uint public amountReceived;
 
     constructor(
         uint _amount,
@@ -37,16 +37,13 @@ contract Loan {
         price = _price;
         dueDate = block.timestamp + duration;
         isRepaid = false;
+        amountReceived = 0;
     }
 
     function makeRepayment() external payable {
-        //require(msg.value == amount + amount * rate / 100, "Incorrect repayment amount");
-        require(msg.sender == borrower, "Only borrower can make repayment");
-        // require(block.timestamp <= dueDate, "Loan is already overdue");
-        if (msg.value >= amount + amount * rate / 100){
-            isRepaid = true;
-        } 
-        payable(collateralHolder).transfer(collateralAmount);
+        require(address(this).balance >= (amount * 1 ether * rate)+amount*1 ether, "Balance not sufficient");
+        payable(owner).transfer(address(this).balance);
+        isRepaid = true;
     }
 
     function changeLender(address _newLender) external {
@@ -71,7 +68,8 @@ contract Loan {
         uint _collateralAmount,
         address _collateralHolder,
         string memory _collateralUrl,
-        uint _price
+        uint _price,
+        uint _amountReceived
     ) {
         return (
             borrower,
@@ -85,22 +83,16 @@ contract Loan {
             collateralAmount,
             collateralHolder,
             collateralUrl,
-            price
+            price,
+            amountReceived
         );
     }
     
-    function repayLoan() external payable {
+    receive() external payable{
         require(!isRepaid, "Loan is already repaid");
-        if (block.timestamp > dueDate) {
-            payable(owner).transfer(address(this).balance + collateralAmount);
-        } else {
-            require(msg.value == amount + amount * rate / 100, "Incorrect repayment amount");
-            isRepaid = true;
-            payable(collateralHolder).transfer(collateralAmount);
-        }
+        require(msg.sender == borrower, "Only borrower can make repayment");
+        amountReceived+=msg.value;
+        //emit Received(msg.sender, msg.value);
     }
 
-    function mint(address _to, bytes memory _nftData) public returns (uint256) {
-        _safeMint(_to, 0);
-    }
 }

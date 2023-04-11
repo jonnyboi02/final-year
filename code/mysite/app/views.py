@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 
 from .forms import ContractForm
-from .models import User, Contract
+from .models import User, Contract, NFTContract
 from django.views.decorators.csrf import csrf_exempt
 import io, json
 from django.contrib.auth import authenticate, login
@@ -43,9 +43,26 @@ def index(request):
 #         return HttpResponse(url)
 #     else:
 #         return render(request, 'upload.html')
+
+#Returns how many nft objects we have
+def get_nft_length(request):
+    nft_objects = NFTContract.objects.all()
+    return JsonResponse({'length': str(len(nft_objects))})
+
+#In the case that we have no nft objects, we retrive the address of the deployed smart contract
 def get_nft_address(request):
-    json_data = request.body
-    body = json.loads(json_data)
+    if request.method == "POST":
+        json_data = request.body
+        body = json.loads(json_data)
+        address = body["address"]
+        nft = NFTContract.objects.create(address = address)
+        nft.save()
+        return JsonResponse({'address': address})
+    elif request.method == "GET":
+        nfts = NFTContract.objects.all()
+        return JsonResponse({'address' : str(nfts[0])})
+
+    
     
 
 

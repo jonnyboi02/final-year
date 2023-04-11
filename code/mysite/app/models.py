@@ -7,6 +7,7 @@ class NFTContract(models.Model):
 
     def __str__(self):
         return self.address
+    
 # Create your models here.
 class User(AbstractUser):
     key_store = models.FileField(blank=True, null=True)
