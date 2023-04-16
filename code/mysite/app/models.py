@@ -2,6 +2,8 @@ from django.db import models
 
 from django.contrib.auth.models import AbstractUser
 
+    # geth --http.api "personal,eth,net,web3" --miner.etherbase 0x90331b6e55da29a705c28c5dbe6d5b47e23c7aae --networkid 16969 --datadir "./data" --bootnodes enode://e297a68f525b4f12c63a783b69e9a15fb00db71070f037c14af1298f3464c2dce1659531b73416c57fab0138f45051bd01b452f3b9cdfeda7ebd157ae375cf1f@127.0.0.1:0?discport=30301 --port 30303 --ipcdisable --syncmode full --http --allow-insecure-unlock --http.corsdomain "*" --http.port 8547 --unlock 0x90331B6e55DA29A705C28C5DbE6d5B47E23C7aae --password password.txt --mine console  --unlock 0
+
 class LoanRequest(models.Model):
     amount = models.CharField(max_length=50)
     duration = models.CharField(max_length=50)
