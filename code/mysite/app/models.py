@@ -2,6 +2,11 @@ from django.db import models
 
 from django.contrib.auth.models import AbstractUser
 
+class LoanRequest(models.Model):
+    amount = models.CharField(max_length=50)
+    
+
+
 class NFTContract(models.Model):
     address = models.CharField(max_length=42, unique=True)
 
