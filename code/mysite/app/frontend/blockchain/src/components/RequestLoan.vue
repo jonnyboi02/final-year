@@ -10,13 +10,13 @@
     <h3>Request Loan</h3>
     <!-- <div id = 'header'> -->
       <div id='contents' style="border-style: solid; border-radius: 25px; border-width: thin;">
-        <h4> Current Annual Interest rate is {{ form.rate }}%</h4>
+        <h4> Current Annual Interest rate is {{ baseInterestRate }}%</h4>
 
       </div>
 
     <!-- </div> -->
     <div v-if="loanContractAddress " id="deploy" > Contract Deployed at : {{ loanContractAddress }} </div>
-    <div style="padding-bottom: 10px; ">
+    <div style="padding-bottom: 10px; " @change="aprCalculation">
       <!-- form:{
           amount: 100,
           rate: 10,
@@ -62,19 +62,23 @@
     </div>
 
     <div style="padding-bottom: 10px; ">       
-      <button @click="deployLoanContract" class="button"  >Deploy smart contract</button>
+      <button @click="deployLoanContract" class="button"  >Request Loan</button>
       <!-- <button @click="changeOwner" class="button" style="float: right; ">Change Contract Owner</button>
       <button @click="getLoanDetails">Get Contract Details</button>  -->
     </div>
 
-    <!-- <button>Generate URL</button> -->
-    {{ test }}
+    <div style="border-style: solid; border-radius: 25px; border-width: thin; margin-left: 75px; margin-right: 75px;">
+        <h4>Calculated APR: {{ this.form.rate }}%</h4>
+    
 
-    {{ tokens }}
+    </div>
+
+    <!-- <button>Generate URL</button> -->
+   
     <!-- <div style="padding-bottom: 10px; ">
       <button @click="changeOwner" class="button">Change Contract Owner</button>
     </div> -->
-    <div style="padding-bottom: 10px; ">
+    <!-- <div style="padding-bottom: 10px; ">
       <button >Get Contract Details</button> 
       <p v-if="loanDetails">
         Borrower: {{ loanDetails.borrower }}<br>
@@ -90,7 +94,7 @@
         Collateral URL : {{loanDetails.collateralUrl }} <br>
         Contract Price : {{loanDetails.price  }}<br>
       </p>
-    </div>
+    </div> -->
   </div>
 
 
@@ -140,9 +144,48 @@ import NFTmint from './NFTmint.vue';
               instance: "",
             },
             tokens:[],
+            baseInterestRate: 3,
         };
     },
     methods: {
+        aprCalculation(){
+            try{
+                const rate = this.baseInterestRate
+                const amount = this.form.amount
+                const days = this.form.duration/3600
+                const collateralValue = this.form.collateralAmount
+                
+                let interestRate = rate+ (1-(rate/100))*(1-(collateralValue/amount))
+                let interestAmount = (amount * (interestRate/100) *(days/365))
+
+                //formula used to calculate the apr for stuff
+                let apr = ((interestAmount/amount)/(days/365))*100
+                
+                if (apr<0){
+                    this.form.rate = 3
+                }
+                else{
+                    this.form.rate = apr;
+                }
+                // this.form.rate = apr;
+                // Toastify({
+                //         text: apr+ "Hi" + interestAmount,
+                //         duration: 3000,
+                //         close: true,
+                //         backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                //         stopOnFocus: true
+                //     }).showToast();
+            }catch(error){
+                Toastify({
+                        text: "Hey",
+                        duration: 3000,
+                        close: true,
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        stopOnFocus: true
+                    }).showToast();
+            }
+
+        },
         handleFileUpload(event) {
             this.nftFile = event.target.files[0];
         },
