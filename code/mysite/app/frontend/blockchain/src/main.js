@@ -14,6 +14,9 @@ import Login2 from './components/Login2.vue'
 import {user} from "./user.js";
 import LogOut from './components/LogOut.vue'
 import Toastify from "toastify-js";
+// import Vuetify from 'vuetify'
+// import 'vuetify/dist/vuetify.min.css'
+
 export function logout() {
     localStorage.removeItem('token'); // remove the token from localStorage
 }

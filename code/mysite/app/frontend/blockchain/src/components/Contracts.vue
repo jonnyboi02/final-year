@@ -54,13 +54,20 @@
               Due Date: {{ loanDetails.dueDate }}<br>
               Is Repaid: {{ loanDetails.isRepaid }}<br>
               Collateral Amount: {{ loanDetails.collateralAmount }}<br>
-              Amount Received: {{ loanDetails.amountreceived }}
+              Amount Received: {{ loanDetails.amountreceived }} <br>
               <!-- Collateral Holder: {{ loanDetails.collateralHolder }}<br> -->
               <!-- Collateral URL : {{loanDetails.collateralUrl }} <br> -->
               <!-- Contract Price : {{loanDetails.price  }}<br> -->
             </p>
-            <p v-if = 'loanDetails' style="border-style: solid; border-radius: 25px; border-color: white; border-width: thin;"><span style="color: white; text-decoration: underline; ">Contract Price: {{ loanDetails.price  }} ETH</span></p>
+            <div v-if = 'loanDetails'  style="border-style: solid; border-radius: 15px; border-color: white; border-width: thin;">
+                <p v-if = 'loanDetails'><span style="color: white; text-decoration: underline; ">Contract Price: {{ loanDetails.price  }} ETH</span></p>
+              <p><span style="color: white; text-decoration: underline; ">Original Owner: {{ nftOwner }} ETH</span></p>
+              <p><span style="color: white; text-decoration: underline; ">Current Owner: {{ originalnftOwner }} ETH</span></p>
+
+            </div>
+           
           </div>
+          <br>
           <button @click="getNFT" v-if="loanDetails">View NFT</button>
           <!-- <v-alert
             :value="alert.show"
@@ -149,6 +156,7 @@ import LoanABI from './contracts/LoanABI.json'
 import BalanceComponent from './BalanceComponent.vue';
 import nftABI from './contracts/MyNFT.json'
  
+
 //function to convert the unix time into normal date
 const unixToDate = (unixTime) => {
   const date = new Date(unixTime * 1000);
@@ -180,7 +188,41 @@ function getDaysLeft(startDateUnix, endDateUnix) {
   // return the number of days left
   return diffDays;
 }
+function notifyRepaymentLeft(startDateUnix, endDateUnix){
+  const startDate = new Date(startDateUnix * 1000);
+  const endDate = new Date(endDateUnix * 1000);
+    // calculate the difference in milliseconds between the two dates
+  const diffMillis = endDate.getTime() - startDate.getTime();
 
+  // calculate the number of days between the two dates and round down to the nearest integer
+  const diffDays = Math.floor(diffMillis / (1000 * 60 * 60 * 24));
+  if (diffDays <= 3) {
+    // show red toast notification for 3 days or less
+    //toast.error(`Only ${diffDays} days left!`, { autoClose: false });
+        Toastify({
+            text: `Only ${diffDays} days left!`,
+            backgroundColor: "red",
+            position: "center",
+        }).showToast();
+  } else if (diffDays <= 7) {
+    // show orange toast notification for 7 days or less
+    Toastify({
+            text: `Only ${diffDays} days left!`,
+            backgroundColor: "orange",
+            position: "center",
+        }).showToast();
+  }
+  else{
+    Toastify({
+            text: `${diffDays} days till Repayment!`,
+            backgroundColor: "green",
+            position: "center",
+        }).showToast();
+
+  }
+  return diffDays;
+
+}
 
 export default {
     data() {
@@ -202,6 +244,9 @@ export default {
             accountInstance: null,
             loanContractInstance: null,
             dayToPay: null,
+            nftOwner: "",
+            originalnftOwner: "",
+
             alert:{
               message: "",
               show: false,
@@ -223,6 +268,23 @@ export default {
         this.selectedAddress = this.contractAddresses[0];
     },
     methods: {
+      async alertUser(){
+
+      },
+      async getOriginalNFTOwner(){
+        const web3 = new Web3("http://localhost:8547");
+        const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddress);
+        const result = await LoanContract.methods.getLoanDetails().call();
+        const NFTid = result[9]
+        let data = await req.json()
+        let NFTaddress = data.address;
+
+        let NFTcontract = new web3.eth.Contract(nftABI, NFTaddress);
+        let nftowner = await NFTcontract.methods.originalOwnerOf(NFTid).call()
+        this.nftOwner = nftowner;
+
+      },
+
       //retrive NFT url from smart contract
       async getNFT(){
         const web3 = new Web3("http://localhost:8547");
@@ -469,7 +531,7 @@ export default {
                     owner: result[1],
                     amount: result[2],
                     rate: result[3],
-                    duration: getDaysLeft((result[5]-result[4]), (result[5])) + " days",
+                    duration: notifyRepaymentLeft((result[5]-result[4]), (result[5])) + " days",
                     dueDate: unixToDate(result[5]),
                     isRepaid: result[6] ? "Yes" : "No",
                     collateralAmount: result[7],
@@ -479,8 +541,40 @@ export default {
                     amountreceived: result[11]
 
                 }
-                this.dayToPay = getDaysLeft((Math.floor(Date.now() / 1000)), (result[5])) + " days";
+                this.dayToPay = getDaysLeft((result[5]-result[4]), result[5]) + " days";
+                
 
+
+                //const result = await LoanContract.methods.getLoanDetails().call();
+                const NFTid = await result[9]
+                const req = await fetch("http://127.0.0.1:8000/get_nft_address/");
+                let data = await req.json()
+                let NFTaddress = await data.address;
+
+
+                let NFTcontract = new web3.eth.Contract(nftABI, NFTaddress);
+                
+                Toastify({
+                    text: "hi",
+                    backgroundColor: "green",
+                    position: "center",
+                }).showToast();
+                this.nftOwner = NFTid
+                try{
+                  this.originalnftOwner = await NFTcontract.methods.originalOwnerOf(NFTid).call()
+                  this.nftOwner = await NFTcontract.methods.ownerOf(NFTid).call()
+                }catch(error){
+                  Toastify({
+                    text: error,
+                    backgroundColor: "green",
+                    position: "center",
+                }).showToast();
+                }
+                
+                
+                //this.nftOwner =await NFTcontract.methods.originalOwnerOf(NFTid).call()
+                //this.nftOwner = NFTid
+                //getOriginalNFTOwner();
 
             }
             catch (error) {
