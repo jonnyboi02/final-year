@@ -159,13 +159,15 @@ import NFTmint from './NFTmint.vue';
                 let interestAmount = (amount * (interestRate/100) *(days/365))
 
                 //formula used to calculate the apr for stuff
-                let apr = ((interestAmount/amount)/(days/365))*100
+                let apr = ((interestAmount/amount)/(days/365))*100;
+                apr = apr.toFixed(2);
+
                 
                 if (apr<0){
                     this.form.rate = 3
                 }
                 else{
-                    this.form.rate = apr;
+                    this.form.rate = 3.0;
                 }
                 // this.form.rate = apr;
                 // Toastify({
@@ -387,14 +389,14 @@ import NFTmint from './NFTmint.vue';
             }
         },
         async deployLoanContract() {
-            if (this.form.collateralAmount / this.form.amount < 0.75) {
-                Toastify({
-                    text: "Please contribute a higher value NFT",
-                    backgroundColor: "red",
-                    position: "center",
-                }).showToast();
-                return;
-            }
+            // if (this.form.collateralAmount / this.form.amount < 0.75) {
+            //     Toastify({
+            //         text: "Please contribute a higher value NFT",
+            //         backgroundColor: "red",
+            //         position: "center",
+            //     }).showToast();
+            //     return;
+            // }
             //sends the funds
             this.sendTransaction();
 

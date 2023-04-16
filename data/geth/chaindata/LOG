@@ -34,3 +34,21 @@
 11:53:46.544093 version@stat F·[3] S·2MiB[2MiB] Sc·[0.75]
 11:53:46.549705 db@janitor F·5 G·0
 11:53:46.549705 db@open done T·68.1845ms
+=============== Apr 5, 2023 (BST) ===============
+23:43:28.657596 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+23:43:28.679582 version@stat F·[3] S·2MiB[2MiB] Sc·[0.75]
+23:43:28.679582 db@open opening
+23:43:28.680582 journal@recovery F·1
+23:43:28.682580 journal@recovery recovering @9
+23:43:28.715282 memdb@flush created L0@11 N·2 S·663B "eth..ˏ\xa3,v21274":"unc..own,v21275"
+23:43:28.717352 version@stat F·[4] S·2MiB[2MiB] Sc·[1.00]
+23:43:28.791572 db@janitor F·6 G·0
+23:43:28.791572 db@open done T·111.9896ms
+23:43:28.791572 table@compaction L0·4 -> L1·0 S·2MiB Q·21276
+23:43:29.031134 table@build created L1@14 N·18621 S·2MiB "\x00\x00\xae..\x82\x88\x11,v9389":"Ʉ`..\x80\xa8`,v13872"
+23:43:29.157174 table@build created L1@15 N·2643 S·303KiB "Ɏ\x9f..<\xb1w,v12720":"\xff\xfc\x94..\xa5\x05\xa1,v9518"
+23:43:29.157174 version@stat F·[0 2] S·2MiB[0B 2MiB] Sc·[0.00 0.02]
+23:43:29.212973 table@compaction committed F-2 S-1KiB Ke·0 D·8 T·412.1264ms
+23:43:29.212973 table@remove removed @8
+23:43:29.213523 table@remove removed @5
+23:43:29.214082 table@remove removed @2
