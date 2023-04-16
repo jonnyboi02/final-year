@@ -27,6 +27,11 @@ def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
 
+def request_loan(request):
+    json_data = request.body
+    body = json.loads(json_data)
+    
+
 # def upload_file(request):
 #     if request.method == 'POST' and request.FILES['file']:
 #         # generate a unique filename for the uploaded file

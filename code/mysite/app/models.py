@@ -4,7 +4,13 @@ from django.contrib.auth.models import AbstractUser
 
 class LoanRequest(models.Model):
     amount = models.CharField(max_length=50)
-    
+    duration = models.CharField(max_length=50)
+    rate = models.CharField(max_length=50)
+    collateralValue = models.CharField(max_length=50)
+    collateralHolder = models.CharField(max_length=50)
+    collateralURL = models.CharField(max_length=250)
+    loanApproved = models.BooleanField()
+
 
 
 class NFTContract(models.Model):
