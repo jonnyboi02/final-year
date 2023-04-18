@@ -25,6 +25,9 @@
           <li class="nav-item">
             <router-link to="/contracts" class="nav-link">Contracts</router-link>
           </li>
+          <li class="nav-item">
+            <router-link to="/loan_requests" class="nav-link">Loan Requests</router-link>
+          </li>
         </ul>
       </div>
     </nav>

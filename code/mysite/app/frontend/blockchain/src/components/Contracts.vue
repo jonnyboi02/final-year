@@ -61,8 +61,8 @@
             </p>
             <div v-if = 'loanDetails'  style="border-style: solid; border-radius: 15px; border-color: white; border-width: thin;">
                 <p v-if = 'loanDetails'><span style="color: white; text-decoration: underline; ">Contract Price: {{ loanDetails.price  }} ETH</span></p>
-              <p><span style="color: white; text-decoration: underline; ">Original Owner: {{ nftOwner }} ETH</span></p>
-              <p><span style="color: white; text-decoration: underline; ">Current Owner: {{ originalnftOwner }} ETH</span></p>
+              <p><span style="color: white; text-decoration: underline; ">Original Owner: {{ originalnftOwner }} ETH</span></p>
+              <p><span style="color: white; text-decoration: underline; ">Current Owner: {{ nftOwner }} ETH</span></p>
 
             </div>
            
@@ -189,7 +189,7 @@ function getDaysLeft(startDateUnix, endDateUnix) {
   return diffDays;
 }
 function notifyRepaymentLeft(startDateUnix, endDateUnix){
-  const startDate = new Date(startDateUnix * 1000);
+  const startDate = new Date();
   const endDate = new Date(endDateUnix * 1000);
     // calculate the difference in milliseconds between the two dates
   const diffMillis = endDate.getTime() - startDate.getTime();
@@ -541,7 +541,7 @@ export default {
                     amountreceived: result[11]
 
                 }
-                this.dayToPay = getDaysLeft((result[5]-result[4]), result[5]) + " days";
+                this.dayToPay = notifyRepaymentLeft((result[5]-result[4]), result[5]) + " days";
                 
 
 

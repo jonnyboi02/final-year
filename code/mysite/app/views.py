@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 
 from .forms import ContractForm
-from .models import User, Contract, NFTContract
+from .models import User, Contract, NFTContract, LoanRequest
 from django.views.decorators.csrf import csrf_exempt
 import io, json
 from django.contrib.auth import authenticate, login
@@ -26,12 +26,47 @@ import re
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
-
+@csrf_exempt
 def request_loan(request):
+    if request.method == 'POST':
+        json_data = request.body
+        body = json.loads(json_data)
+        account=body['account']
+        amount = body['amount']
+        duration = body['duration']
+        rate =body['rate']
+        collateralValue=body['collateralValue']
+        collateralHolder=body['collateralHolder']
+        collateralURL = body['collateralURL']
+        #set to false
+        #loanApproved = body['']
+        price = body['price']
+        requestedloan = LoanRequest.objects.create(lender=account, amount=amount, duration=duration, rate=rate, collateralValue=collateralValue, collateralHolder=collateralHolder, collateralURL=collateralURL, loanApproved=False,loanWaiting=True, price=price)
+        requestedloan.save()
+        return JsonResponse({'amount': amount})
+    elif request.method == 'GET':
+        loan_requests = LoanRequest.objects.all().values()
+        return JsonResponse(list(loan_requests), safe=False)
+
+def reject_loan(request):
     json_data = request.body
     body = json.loads(json_data)
-    
+    id = body['id']
+    cur_request = LoanRequest.objects.get(id = id)
+    cur_request.loanApproved = False
+    cur_request.loanWaiting = False
+    cur_request.save()
+    return JsonResponse({'status': 'success'})
 
+def accept_loan(request):
+    json_data = request.body
+    body = json.loads(json_data)
+    id = body['id']
+    cur_request = LoanRequest.objects.get(id = id)
+    cur_request.loanApproved = True
+    cur_request.loanWaiting = False
+    cur_request.save()
+    return JsonResponse({'status': 'success'})
 # def upload_file(request):
 #     if request.method == 'POST' and request.FILES['file']:
 #         # generate a unique filename for the uploaded file

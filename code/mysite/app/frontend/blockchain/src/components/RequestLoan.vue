@@ -68,7 +68,7 @@
     </div>
 
     <div style="border-style: solid; border-radius: 25px; border-width: thin; margin-left: 75px; margin-right: 75px;">
-        <h4>Calculated APR: {{ this.form.rate }}%</h4>
+        <h4>Calculated APR: {{ this.apr }}%</h4>
     
 
     </div>
@@ -110,9 +110,9 @@
   import {Buffer } from 'buffer';
 import NFTmint from './NFTmint.vue';
   export default {
-    mounted() {
+    async mounted() {
         this.getAccounts();
-        this.getAddress();
+        await this.getAddress();
         this.durationToSeconds();
     },
     data() {
@@ -145,6 +145,8 @@ import NFTmint from './NFTmint.vue';
             },
             tokens:[],
             baseInterestRate: 3,
+            curAccount: null,
+            apr: 3,
         };
     },
     methods: {
@@ -160,14 +162,14 @@ import NFTmint from './NFTmint.vue';
 
                 //formula used to calculate the apr for stuff
                 let apr = ((interestAmount/amount)/(days/365))*100;
-                apr = apr.toFixed(2);
+                this.apr = apr.toFixed(2);
 
                 
                 if (apr<0){
                     this.form.rate = 3
                 }
                 else{
-                    this.form.rate = 3.0;
+                    this.form.rate = 3;
                 }
                 // this.form.rate = apr;
                 // Toastify({
@@ -241,6 +243,7 @@ import NFTmint from './NFTmint.vue';
                 }
                 else {
                     this.form.collateralHolder = data.key;
+                    this.curAccount = data.key;
                 }
             });
         },
@@ -388,6 +391,94 @@ import NFTmint from './NFTmint.vue';
                 }).showToast();
             }
         },
+        async requestLoan(){
+            const formData = new FormData();
+            formData.append("file", this.nftFile);
+            const response1 = await fetch("http://localhost:8000/generate-url/", {
+                method: "POST",
+                body: formData
+            });
+            const data = await response1.json();
+            //this.test = data.url;
+            //his.form.collateralUrl = data.url;
+            let url = data.url
+
+            //this.accountInstance = form.collateralHolder;
+
+            var account = this.accountInstance;
+            const req = await fetch("http://127.0.0.1:8000/get_nft_address/");
+            let data1 = await req.json()
+            this.contract.address = data1.address
+
+            
+            const web3 = new Web3("http://localhost:8547");
+            const accounts = await web3.eth.getAccounts();
+
+            for (let i =0; i< accounts.length; i++){
+                if (JSON.stringify(accounts[i].toLowerCase()) === JSON.stringify(this.form.collateralHolder.toLowerCase())){
+                    account = accounts[i]
+                    break;
+                }
+            }
+
+            var contract = new web3.eth.Contract(nftABI, this.contract.address);
+
+            
+
+            this.contract.instance = contract;
+           
+
+            await contract.methods.mint(account, url).send({from: accounts[0]})
+           
+ 
+
+
+            const tokenIds = await contract.methods.tokensOfOwner(account).call()
+            this.tokens = tokenIds;
+            const uri = await contract.methods.tokenURI(tokenIds[tokenIds.length-1]).call()
+            this.uri = uri
+
+
+            try{
+                const response = await fetch("http://127.0.0.1:8000/request_loan/", {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        'account' : this.accountInstance,
+                        'amount' : this.form.amount,
+                        'duration' : this.form.duration,
+                        'rate': this.form.rate,
+                        'collateralValue': this.form.collateralAmount,
+                        'collateralHolder': this.form.collateralHolder,
+                        'collateralURL' : this.tokens[this.tokens.length-1],
+                        'price': this.form.price,
+
+                    })
+                })
+                let datas = await response.json()
+                Toastify({
+                    text: `Loan Request Made! `+account,
+                    backgroundColor: "green",
+                    position: "center",
+                }).showToast();
+
+        }catch(error){
+                            Toastify({
+                            text: `Error deploying contract: `+error ,
+                            backgroundColor: "red",
+                            position: "center",
+                        }).showToast();
+        }
+            // if (data.amount){
+            //     Toastify({
+            //                 text: `Error deploying contract: }` + this.form.collateralHoldercollateralHolder,
+            //                 backgroundColor: "red",
+            //                 position: "center",
+            //             }).showToast();
+            // }
+            
+
+
+        },
         async deployLoanContract() {
             // if (this.form.collateralAmount / this.form.amount < 0.75) {
             //     Toastify({
@@ -397,8 +488,12 @@ import NFTmint from './NFTmint.vue';
             //     }).showToast();
             //     return;
             // }
+
+            //this.requestLoan();
             //sends the funds
             this.sendTransaction();
+
+            this.requestLoan();
 
             const web3 = new Web3("http://localhost:8547");
             const accounts = await web3.eth.getAccounts();
@@ -434,60 +529,61 @@ import NFTmint from './NFTmint.vue';
                     //this.senderPassword = localStorage.getItem('password')
                 }
             });
-            for (let i = 0; i < accounts.length; i++) {
-                if (JSON.stringify(accounts[i].toLowerCase()) === JSON.stringify(this.form.collateralHolder.toLowerCase())) {
-                    this.form.collateralHolder = accounts[i];
-                    account = accounts[i];
-                    this.accountInstance = accounts[i];
+            // for (let i = 0; i < accounts.length; i++) {
+            //     if (JSON.stringify(accounts[i].toLowerCase()) === JSON.stringify(this.form.collateralHolder.toLowerCase())) {
+            //         this.form.collateralHolder = accounts[i];
+            //         account = accounts[i];
+            //         this.accountInstance = accounts[i];
 
-                    await this.generateURL();
+            //         //generate the URL and transfer ownership of this
+            //         await this.generateURL();
                     
-                    this.form.collateralUrl = this.tokens[this.tokens.length-1]
+            //         this.form.collateralUrl = this.tokens[this.tokens.length-1]
 
-                    const args = [
-                        this.form.amount,
-                        this.form.rate,
-                        this.form.duration,
-                        this.form.collateralAmount,
-                        this.form.collateralHolder,
-                        this.tokens[this.tokens.length-1],
-                        this.form.price,
-                    ];
-                    try {
-                        //deploys the smart contract
-                        const contract = await LoanContract.deploy({
-                            arguments: args
-                        }).send(options);
-                        this.loanContractAddress = contract.options.address;
-                        this.loanContractInstance = new web3.eth.Contract(LoanABI, this.loanContractAddress);
-                        const response = fetch("http://127.0.0.1:8000/contracts/", {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": "application/json"
-                            },
-                            body: JSON.stringify({
-                                "address": this.loanContractAddress,
-                            }),
-                        });
+            //         const args = [
+            //             this.form.amount,
+            //             this.form.rate,
+            //             this.form.duration,
+            //             this.form.collateralAmount,
+            //             this.form.collateralHolder,
+            //             this.tokens[this.tokens.length-1],
+            //             this.form.price,
+            //         ];
+            //         try {
+            //             //deploys the smart contract
+            //             const contract = await LoanContract.deploy({
+            //                 arguments: args
+            //             }).send(options);
+            //             this.loanContractAddress = contract.options.address;
+            //             this.loanContractInstance = new web3.eth.Contract(LoanABI, this.loanContractAddress);
+            //             const response = fetch("http://127.0.0.1:8000/contracts/", {
+            //                 method: "PUT",
+            //                 headers: {
+            //                     "Content-Type": "application/json"
+            //                 },
+            //                 body: JSON.stringify({
+            //                     "address": this.loanContractAddress,
+            //                 }),
+            //             });
 
-                        const fileReader = new FileReader();
+            //             const fileReader = new FileReader();
   
-                        Toastify({
-                            text: `Deployed loan contract ` + this.loanContractAddress + " " + this.form.collateralHolder,
-                            backgroundColor: "green",
-                            position: "center",
-                        }).showToast();
-                    }
-                    catch (error) {
-                        Toastify({
-                            text: `Error deploying contract: ${error}` + this.form.collateralHoldercollateralHolder,
-                            backgroundColor: "red",
-                            position: "center",
-                        }).showToast();
-                    }
-                    break;
-                }
-            }
+            //             Toastify({
+            //                 text: `Deployed loan contract ` + this.loanContractAddress + " " + this.form.collateralHolder,
+            //                 backgroundColor: "green",
+            //                 position: "center",
+            //             }).showToast();
+            //         }
+            //         catch (error) {
+            //             Toastify({
+            //                 text: `Error deploying contract: ${error}` + this.form.collateralHoldercollateralHolder,
+            //                 backgroundColor: "red",
+            //                 position: "center",
+            //             }).showToast();
+            //         }
+            //         break;
+            //     }
+            // }
         },
         async generateURL() {
 
@@ -541,9 +637,9 @@ import NFTmint from './NFTmint.vue';
                 //transfers nft to contract
                 try{
 
-                    web3.eth.personal.unlockAccount(this.accountInstance, localStorage.getItem('password'), 600);
+                    await web3.eth.personal.unlockAccount(this.accountInstance, localStorage.getItem('password'), 600);
 
-                    let d = await contract.methods.transferNFT(this.accountInstance,contract.options.address ,tokenIds[tokenIds.length-1]) .send({from: this.accountInstance})
+                    let d = await contract.methods.transferFrom(this.accountInstance,contract.options.address ,tokenIds[tokenIds.length-1]) .send({from: this.accountInstance})
 
                     Toastify({
                     text: "NFT uploaded "+this.contract.address + "with uri "+uri+d,
@@ -557,7 +653,7 @@ import NFTmint from './NFTmint.vue';
                     // }).showToast();
                 }catch(error){
                     Toastify({
-                    text: "Fuck" + error + localStorage.getItem('password'),
+                    text: "" + error + localStorage.getItem('password'),
                     position: "center",
                     }).showToast();
                 }

@@ -1,0 +1,13 @@
+Pressure:, one time at university for a group project when we were tasked to create ebay using JS Django. A few days before submission, we found a critical bug that resulted in unexpected output on the front end, I stayed calm and assembled team members to identify and fix the bug, communicating with each other and ensuring everyone was clear what to do. 
+-	Worked long hours using agile, to iterate and test solutions, identified and fix the bug in time for submission, and dealt with the pressure staying calm.
+Creative (analysis):, as a software engineer I was tasked with redesigning the UI
+-	Instead of using same layout as previous, research ways to make it more User friendly and aesthetics
+-	Research on latest trends, studied the behaviour of application’s target audience, created a new design incorporating features such as call-to-actions and navigation
+-	To check released this version to beta users, gathering feedback, validated creativity due to good feedback and happy with work
+Independent:, as a blockchain research engineer qmul, I was given the project to create a tool to check for … 
+-	A week in my supervisor had to leave for 2 weeks due to.. I had to work independently by researching O and G semantics and solidlity by myself, as well as consulting design decisions myself.
+-	Created a plan, decomposing the plan and setting deadlines reaching out to member when needed, in the end I made good progress well received from my supervisor. As a result importance of independence in work env
+Outside the box: as a SE at ting, we needed to improve performance of the application, we tried to optimise using refactoring, improving database queries but not able to get good results
+-	I suggested we could try something out of box such as a caching solution initaliy the team were hesitant at first, but I convinced them to try. We implemented this and drastically improved backend performance.
+-	Taught me that to solve problems we should sometimes try something out of box and open to exploring new technologies.
+Persevere, Resilience: as a se at ting, I was tasked in implementing a new function to improve rendering time. I became frustrated as I couldn’t work as expected, invested time finding root cause of the issue, caused frustration, as it was critical to the next release

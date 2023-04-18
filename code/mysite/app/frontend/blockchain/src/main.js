@@ -10,6 +10,7 @@ import Login from './components/Login.vue'
 import GetBalance from './components/GetBalance.vue'
 import RequestLoan from './components/RequestLoan.vue'
 import Contracts from './components/Contracts.vue'
+import LoanRequests from './components/LoanRequests.vue'
 import Login2 from './components/Login2.vue'
 import {user} from "./user.js";
 import LogOut from './components/LogOut.vue'
@@ -35,7 +36,7 @@ const routes = [
     {path: '/deploy_contract', component: RequestLoan, name: "Request Loan"},
     {path: '/contracts', component: Contracts, name: "Contracts"},
     {path: '/login2', component: Login2, name: "Login"},
-    
+    {path: '/loan_requests', component: LoanRequests, name: "Loan Requests"},
     {
         path: '/logout',
         name: 'Logout',
@@ -76,7 +77,8 @@ router.beforeEach(async (to, from) => {
             to.name === 'Request Loan' ||
             to.name === 'Contracts' ||
             to.name === 'Send Transaction' ||
-            to.name === 'Logout'
+            to.name === 'Logout' ||
+            to.name === 'Loan Requests'
         )
     ) {
         Toastify({
