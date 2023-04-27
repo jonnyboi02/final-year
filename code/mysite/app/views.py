@@ -107,7 +107,7 @@ def get_nft_address(request):
 
 
 def upload_file(request):
-    if request.method == 'POST' and request.FILES['file']:
+    if request.method == 'POST'  and 'file' in request.FILES:
         # get the file object from the request
         file = request.FILES['file']
         filename, ext = os.path.splitext(file.name)

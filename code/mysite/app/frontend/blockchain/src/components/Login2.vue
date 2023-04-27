@@ -1,15 +1,27 @@
 <template>
-    <div style="color: white;">
-      <h3>Login</h3>
+    <div  class="login-box" style="color: white;">
+      <h2>Login</h2>
       <form @submit.prevent="login">
-        <label>Username:</label> <br>
-        <input type="text" v-model="username">
-        <br>
-        <label>Password:</label> <br>
-        <input type="password" v-model="password">
-        <br>
-        <br>
-        <button type="submit">Submit</button>
+        <div class="user-box" >
+          
+          <input id = 'username' type="text" name="" required="" v-model="username">
+     
+          <label>Username</label> 
+        
+      </div>
+      <div class="user-box">
+        <input id = 'password' type="password" name="" required="" v-model="password">
+        <label>Password</label> 
+        
+      </div>
+      <a  type="submit" @click="login">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                Submit
+            </a>
+        <!-- <button type="submit">Submit</button> -->
       </form>
     </div>
   </template>
@@ -26,6 +38,13 @@ import "toastify-js/src/toastify.css"
     },
     methods: {
       login() {
+        // Toastify({
+        //             text: 'Login',
+        //             backgroundColor: 'green',
+        //             className: 'toastify-content',
+        //     }).showToast();
+        this.username = document.getElementById('username').value
+        this.password = document.getElementById('password').value
         fetch('http://localhost:8000/login2/', {
           method: 'POST',
           headers: {
@@ -58,10 +77,13 @@ import "toastify-js/src/toastify.css"
             
           })
           .catch((error) => {
-            console.log(error);
+            Toastify({
+                    text: 'Login unsuccessful',
+                    backgroundColor: 'red',
+                    className: 'toastify-content',
+            }).showToast();
           });
       },
     },
   };
   </script>
-  

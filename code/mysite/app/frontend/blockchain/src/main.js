@@ -11,6 +11,7 @@ import GetBalance from './components/GetBalance.vue'
 import RequestLoan from './components/RequestLoan.vue'
 import Contracts from './components/Contracts.vue'
 import LoanRequests from './components/LoanRequests.vue'
+import UserLoanRequests from './components/UserLoanRequests.vue'
 import Login2 from './components/Login2.vue'
 import {user} from "./user.js";
 import LogOut from './components/LogOut.vue'
@@ -37,6 +38,7 @@ const routes = [
     {path: '/contracts', component: Contracts, name: "Contracts"},
     {path: '/login2', component: Login2, name: "Login"},
     {path: '/loan_requests', component: LoanRequests, name: "Loan Requests"},
+    {path: '/assets', component: UserLoanRequests, name: "Requests & Assets"},
     {
         path: '/logout',
         name: 'Logout',

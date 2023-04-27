@@ -41,11 +41,22 @@ contract Loan {
         amountReceived = 0;
     }
 
+    //transfers the ether received by the smart contract to the owner
+    // function makeRepayment() external payable {
+    //     //require(address(this).balance >= (amount * 1 ether * rate)+amount*1 ether, "Balance not sufficient");
+    //     payable(owner).transfer(address(this).balance);
+    //     isRepaid = true;
+    // }
+
     function makeRepayment() external payable {
-        require(address(this).balance >= (amount * 1 ether * rate)+amount*1 ether, "Balance not sufficient");
+        require(msg.value > 0, "Value must be greater than 0");
+        amountReceived += msg.value;
+        // if (amountReceived >= amount * rate + amount) {
         payable(owner).transfer(address(this).balance);
         isRepaid = true;
+    //}
     }
+
 
     function changeLender(address _newLender) external {
         // require(msg.sender == lender || lender == address(0), "Only current lender can change the lender");

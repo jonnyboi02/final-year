@@ -1,12 +1,19 @@
 <template>
-  <div id="header">
-    <h2><span style="font-weight: bold;">Welcome</span> {{ username}}</h2>
-  </div>
-  <BalanceComponent ref="funds" />
+
+
+
+<div class="contractinfo" >
+    <h2><span style="color: white">Welcome {{ username}}</span> </h2>
+
+  <BalanceComponent ref="funds" :key="componentKey" />
   <!-- <div id="funds">
     <p> You currently have: {{ balance }} ETH. </p>
   </div> -->
-
+<div style = 'margin-top: 50px;position: absolute; right: 23%;  background: rgba(0,0,0,.6);
+  box-sizing: border-box;
+  box-shadow: 0 15px 10px rgba(0,0,0,.6);
+  border-radius: 10px;
+  '>
 <div class="grid-container-element">
     <div class="grid-child-element purple" >
         <h3 style="color: white;">List of Owned Contracts</h3>
@@ -17,10 +24,10 @@
         </select> -->
 
       <div  v-if="ownedContracts && ownedContracts.length>0">
-          <nav id="lists" style="margin-left: 0px; color: white; padding-top: 20px;">
+          <nav id="lists" style="margin-left: 0px; color: white; padding-top: 10px;">
             <ul v-if="ownedContracts && contractAddresses.length > 0"  >
               <div style="padding-bottom: 100px;">
-                <li v-for="(address, index) in ownedContracts" :key="address" :value="address" @click="selectItem(index)" style="padding: 2px; border-style: solid; border-radius: 20px; align: center; padding-left: 20px; padding-right: 15px; ">
+                <li v-for="(address, index) in ownedContracts" :key="address" :value="address" @click="selectItem(index)" style="padding: 2px; border-style: solid; border-radius: 10px; align: center; padding-left: 10px; padding-right: 15px; width: 425px; ">
                   {{  address }}
                 </li>
               </div>
@@ -34,8 +41,8 @@
 
       </div>
       <div v-else>
-        <ul style="margin-left: 20px; color: white; padding-top: 20px;">
-            <li style="padding-left: 100px; padding-right: 100px; border-style: solid; border-radius: 25px;">No contracts Owned</li>
+        <ul style="margin-left: 10px; color: white; padding-top: 10px;">
+            <li style="padding-left: 100px; padding-right: 100px; border-style: solid; border-radius: 10px; width: 240px;">No contracts Owned</li>
         </ul>
 
       </div>
@@ -43,11 +50,12 @@
     </div>
     <div class="grid-child-element green" >
       <div v-if="loanDetails">
-      <p v-if = 'dayToPay' style="border-style: solid; border-radius: 25px; border-color: white; border-width: thin; color: white">The loan is due to be paid: {{ dayToPay }}</p>
+      <p v-if = 'dayToPay' style="border-style: solid; border-radius: 10px; border-color: white; border-width: thin; color: white">The loan is due to be paid: {{ dayToPay }}</p>
       <p v-if="loanDetails" style="color: white;">
               <!-- Borrower: {{ loanDetails.borrower }}<br> -->
-              Lender: {{ loanDetails.lender }}<br>
-              Owner: {{ loanDetails.owner }}<br>
+              Lender: <span class="address">{{ loanDetails.lender }}</span><br>
+              Lendee: <span class="address">{{ loanDetails.collateralHolder }}</span><br>
+              Owner: <span class="address">{{ loanDetails.owner }}</span><br>
               Amount: {{ loanDetails.amount }}<br>
               Rate: {{ loanDetails.rate }}<br>
               Duration: {{ loanDetails.duration }}<br>
@@ -55,14 +63,14 @@
               Is Repaid: {{ loanDetails.isRepaid }}<br>
               Collateral Amount: {{ loanDetails.collateralAmount }}<br>
               Amount Received: {{ loanDetails.amountreceived }} <br>
-              <!-- Collateral Holder: {{ loanDetails.collateralHolder }}<br> -->
+             
               <!-- Collateral URL : {{loanDetails.collateralUrl }} <br> -->
               <!-- Contract Price : {{loanDetails.price  }}<br> -->
             </p>
             <div v-if = 'loanDetails'  style="border-style: solid; border-radius: 15px; border-color: white; border-width: thin;">
                 <p v-if = 'loanDetails'><span style="color: white; text-decoration: underline; ">Contract Price: {{ loanDetails.price  }} ETH</span></p>
-              <p><span style="color: white; text-decoration: underline; ">Original Owner: {{ originalnftOwner }} ETH</span></p>
-              <p><span style="color: white; text-decoration: underline; ">Current Owner: {{ nftOwner }} ETH</span></p>
+              <p><span style="color: white; text-decoration: underline; ">NFT Original Owner: {{ originalnftOwner }}</span></p>
+              <p><span style="color: white; text-decoration: underline; ">NFT Current Owner: {{ nftOwner }}</span></p>
 
             </div>
            
@@ -82,16 +90,19 @@
 
     <div class="grid-child-element purple" style="color: white;">
       <h3>Loaned Contracts </h3>
-        <nav id="list" style="margin-left: 0px; color: white; padding-top: 20px;">
+        <nav id="list" style="margin-left: 0px; color: white; padding-top: 10px;">
             <ul v-if="loanedContracts && loanedContracts.length > 0"  >
               <div style="padding-bottom: 100px;">
-                <li v-for="(address, index) in loanedContracts" :key="address" :value="address" @click="selectLoanItem(index)" style="padding: 2px; border-style: solid; border-radius: 20px; align: center; padding-left: 20px; padding-right: 15px; ">
-                  {{  address }}
+                <li v-for="(address, index) in loanedContracts" :key="address" :value="address" @click="selectLoanItem(index)" :class="{ 'selected': selectedAddress === address }" style="padding: 2px; border-style: solid; border-radius: 10px; align: center; padding-left: 10px; padding-right: 15px; width: 425px;">
+                  <span v-if='contractStatus[index] == true' style="color: #b79726">{{ address }}</span>
+                  <span v-else :class="{ 'selected': selectedAddress === address }">{{ address }}</span>
                 </li>
+
+
               </div>
             </ul>
             <ul v-else>
-              <li style="padding-left: 100px; padding-right: 100px; border-style: solid; border-radius: 25px;">No contracts For Sale</li>
+              <li style=" padding-left: 100px; padding-right: 100px; border-style: solid; border-radius: 10px;">No contracts For Sale</li>
             </ul>
            
           </nav>
@@ -104,28 +115,52 @@
           <br>
           <!-- <p v-else class='message'>Select a smart contract address</p> -->
           <button @click="getLoanDetails" class = 'btn'>Get Contract Details</button> 
-          <button class = 'btn'>Repay Loan</button>
+          <button v-if='selectedAddress' @click ="showMessage"  class = 'btn'>Repay Loan</button>
+          <transition name="fade">
+          <div v-if="showOverlay " class="overlay">
+            
+            <div class="content">
+              <h2>Repay Loan</h2>
+              <BalanceComponent :key="componentKey" style="width: 400px;"/>
+             
+              <div style="border-style: solid; border-color: transparent; padding: 10px; border-width: thin; border-radius: 10px; padding-bottom: 0px;">
+                <div style="padding-bottom: 30px;">
+                There are {{ daysLeft }} days till repayment.
+                <br>
+                You need to pay {{ payRequired}} ETH.
+                <!-- {{ repay.amount }} -->
+                </div>
+              <div class = 'user-box'>
+                <input v-model="repay.amount">
+                <label >Enter amount to pay:</label>
+              </div>
+              <button  @click="makeRepayment">Send Payment</button>
+              <br>
+              <br>
+              
+              <button @click="hideMessage" style="position: absolute; transform: translate(-510%, -1050%); background-color: transparent; color: white;; "> X </button>
+            </div>
+          </div>
+          </div>
+        </transition>
+          
        
           
-          
-         
-
-      
-
     </div>
     <div class="grid-child-element green" style="color: white;">
       
       <h3> Contracts for Sale</h3>
-          <nav id="list" style="margin-left: 0px; color: white; padding-top: 20px;">
+          <nav id="list" style="margin-left: 0px; color: white; padding-top: 10px;">
             <ul v-if="contractsForSale && contractsForSale.length > 0"  >
               <div style="padding-bottom: 100px;">
-                <li v-for="(address, index) in contractsForSale" :key="address" :value="address" @click="selectBuyItem(index)" style="padding: 2px; border-style: solid; border-radius: 20px; align: center; padding-left: 20px; padding-right: 15px; ">
+                <li v-for="(address, index) in contractsForSale" :key="address" :value="address" @click="selectBuyItem(index)" :class="{ 'selected': selectedAddress === address }" style="padding: 2px; border-style: solid; border-radius: 10px; align: center; padding-left: 10px; padding-right: 15px; width: 425px;">
                   {{  address }}
+                 
                 </li>
               </div>
             </ul>
             <ul v-else>
-              <li style="padding-left: 100px; padding-right: 100px; border-style: solid; border-radius: 25px;">No contracts For Sale</li>
+              <li style="width: 260px; padding-left: 100px; padding-right: 100px; border-style: solid; border-radius: 10px;">No contracts For Sale</li>
             </ul>
            
           </nav>
@@ -133,19 +168,40 @@
           <!-- <p v-if="selectedItem !== null" class='message'>You have selected: {{ contractsForSale[selectedItem] }}</p> -->
           <!-- <p v-else class='message'>Select a smart contract address</p> -->
           <!-- You have selected: {{ selectedAddressBuy }} -->
-          {{ loanContractInstance }}
+          <!-- {{ loanContractInstance }} -->
           <br>
           <button @click="getLoanDetails"  class = 'btn'>Get Contract Details</button> 
-          <button class = 'btn' @click="buyContract" > Purchase contract</button>
-          
+          <button class = 'btn' @click="showConfirmation(); "  > Purchase contract</button>
+          <!-- buy contract -->
+          <div class="overlay" v-if="isOverlayVisible">
+            <div class="content" style="padding: 30px;">
+              <h2>Are you sure you want to purchase this contract?</h2>
+              <BalanceComponent :key="componentKey" style="width: 400px;"/>
+              <br>
+              <div style="border-style: solid; border-radius: 10px; border-width: thin;">
+                <div>
+                  The Contract Price is: {{ contractPrice }} ETH
+                </div>
+                <div v-if="canBuyContract">
+                  <span style="color: greenyellow">You can afford this.</span>
+                </div>
+                <div v-else>
+                  <span style="color: red">You cannot afford this.</span>
+                </div>
+              </div>
+              <br>
+              <button class="confirm-btn" @click="buyContract">Confirm</button>
+              <button class="cancel-btn" @click="hideConfirmation" style="background-color: transparent; color:white; position: absolute; transform: translate(-630%, -750%);">X</button>
+            </div>
+          </div>
       </div>
-      
+      </div>
 <!-- 
     {{ test }}
     {{ selectedItem}} -->
     {{ account }}
 </div>
-
+</div>
 </template>
 
 <script>
@@ -156,6 +212,51 @@ import LoanABI from './contracts/LoanABI.json'
 import BalanceComponent from './BalanceComponent.vue';
 import nftABI from './contracts/MyNFT.json'
  
+//function to calculate the price of a contract that user want to buy
+function calculateBondPrice(loanAmount, durationDays, apr) {
+  // Calculate the daily discount rate as a decimal
+  const r = apr / 36500;
+
+  // Calculate the sum of discounted cash flows
+  let sumOfDiscountedCashflows = 0;
+  for (let t = 1; t <= durationDays; t++) {
+    const cashFlow = (t === durationDays) ? (loanAmount + (loanAmount * r * durationDays)) : (loanAmount / durationDays);
+    sumOfDiscountedCashflows += cashFlow / Math.pow((1 + r), t/365);
+  }
+
+  // Calculate the interest earned on the bond
+  const interest = (loanAmount * apr * durationDays) / 36500;
+
+  // Calculate the bond price
+  const price = (loanAmount / sumOfDiscountedCashflows) + interest;
+
+  return price;
+}
+
+function calculateReducedLoanAmount(apr, loanAmount, remainingDays){
+  const dailyInterestRate = (apr / 365) / 100;
+
+  // Calculate the daily payment
+  const dailyPayment = loanAmount * dailyInterestRate /
+                        (1 - (1 / Math.pow(1 + dailyInterestRate, remainingDays)));
+
+  // Calculate the remaining loan balance after the specified number of days
+  const remainingBalance = loanAmount * Math.pow(1 + dailyInterestRate, remainingDays) -
+                            (dailyPayment * (Math.pow(1 + dailyInterestRate, remainingDays) - 1) / dailyInterestRate);
+
+  // Calculate the interest savings if the remaining balance is paid in full
+  const interestSavings = remainingBalance * dailyInterestRate * remainingDays;
+
+  // Return the reduced loan amount
+  return loanAmount - interestSavings;
+}
+
+function calculateLateLoanAmount(apr, loanedAmount, daysLate) {
+  const dailyInterestRate = apr / 365;
+  const interestAccrued = loanedAmount * dailyInterestRate * daysLate;
+  const totalLoanAmount = loanedAmount + interestAccrued;
+  return totalLoanAmount;
+}
 
 //function to convert the unix time into normal date
 const unixToDate = (unixTime) => {
@@ -213,11 +314,11 @@ function notifyRepaymentLeft(startDateUnix, endDateUnix){
         }).showToast();
   }
   else{
-    Toastify({
-            text: `${diffDays} days till Repayment!`,
-            backgroundColor: "green",
-            position: "center",
-        }).showToast();
+    // Toastify({
+    //         text: `${diffDays} days till Repayment!`,
+    //         backgroundColor: "green",
+    //         position: "center",
+    //     }).showToast();
 
   }
   return diffDays;
@@ -225,8 +326,32 @@ function notifyRepaymentLeft(startDateUnix, endDateUnix){
 }
 
 export default {
+  watch:{
+    showOverlay(newValue) {
+      if (newValue) {
+        this.setLoanPayment();
+      }
+    },
+
+    isOverlayVisible(newValue){
+      if (newValue){
+        this.contractSalePrice();
+      }
+    }
+  },
     data() {
         return {
+          isOverlayVisible: false,
+
+
+
+          showOverlay: false,
+          overlayInput: '',  
+
+
+
+            balanceKey: 0,
+
             contractAddresses: null,
             selectedAddress: null,
             selectedAddressLoan: null,
@@ -252,7 +377,19 @@ export default {
               show: false,
               type: 'success',
               dismissLabel: 'Dismiss',
-            }
+            },
+            balance: 0,
+            daysLeft: null,
+            payRequired: null,
+
+            repay : {
+              amount: "",
+            },
+            shouldRender: true,
+            componentKey: 0,
+            contractStatus: [],
+
+            contractPrice: null,
           
         };
     },
@@ -266,8 +403,194 @@ export default {
         await this.getAccountInstance();
         await this.getOwnedContracts();
         this.selectedAddress = this.contractAddresses[0];
+        await this.getBalance();
     },
     methods: {
+      //to rerender item
+    //   toggleShouldRender() {
+    //   this.shouldRender = !this.shouldRender
+    // },
+    canBuyContract(){
+      let balance = this.balance;
+      let price = this.contractPrice;
+      return price<balance ? true : false
+    },
+    rerenderComponent() {
+      this.componentKey += 1;
+    },
+
+    rerenderBalance(){
+      this.balanceKey+=1;
+    },
+    // rerenderChild() {
+    //   this.shouldRender = !this.shouldRender
+    // },
+
+    showConfirmation() {
+      this.isOverlayVisible = true;
+    },
+    hideConfirmation() {
+      this.isOverlayVisible = false;
+    },
+
+
+
+      errorMessage(){
+        Toastify({
+            text: `Select a Loan Contract`,
+            backgroundColor: "green",
+            position: "center",
+        }).showToast();
+      },
+
+      showMessage() {
+      this.showOverlay = true;
+    },
+    hideMessage() {
+      this.showOverlay = false;
+    },
+    saveOverlayInput() {
+      // Save overlay input to local state
+      this.$data.overlayInput = this.overlayInput;
+      this.hideMessage();
+    },
+
+    //calculate thhe price of the loan contract
+    async contractSalePrice(){
+      const web3 = new Web3("http://localhost:8547");
+      const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddressBuy);
+      const result = await LoanContract.methods.getLoanDetails().call(); 
+
+      let duration = result[5]/86400;
+      let apr = result[3]/100;
+      let amount = result[2];
+      let calculatedPrice = calculateBondPrice(amount, duration, apr)
+      this.contractPrice = calculatedPrice;
+
+    },
+    //checks if the loan has been repaid yet
+    async loanisPaid(){
+      const web3 = new Web3("http://localhost:8547");
+      const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddressLoan);
+      const result = await LoanContract.methods.getLoanDetails().call(); 
+
+      console.log(result[6])
+      if (JSON.stringify(result[6]) === JSON.stringify(true)){
+        console.log("Loan Repaid")
+        Toastify({
+          text: "Loan repaid",
+          backgroundColor: "red",
+          position: "center",
+          duration: 3000,
+
+        }).showToast();
+        return true;
+      } 
+      return false;
+
+    },
+
+    //sets the pay required based on late or early repayments
+    async setLoanPayment(){
+
+      const web3 = new Web3("http://localhost:8547");
+      const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddressLoan);
+      const result = await LoanContract.methods.getLoanDetails().call();
+
+      //checks if the loan has been repaid
+      if (JSON.stringify(result[6]) === JSON.stringify(true)){
+         this.showOverlay=false;
+        console.log("Loan Repaid")
+        Toastify({
+          text: "Loan repaid",
+          backgroundColor: "red",
+          position: "center",
+          duration: 3000,
+
+        }).showToast();
+      }
+      
+      
+      let dueDate = result[5];
+      let apr = result[3]/100;
+      let loanedAmount = result[2];
+
+      //calculates using unix time,
+      const dueDateInMilliseconds = dueDate * 1000; // Convert Unix time to milliseconds
+      const currentDate = new Date();
+      const dueDateObject = new Date(dueDateInMilliseconds);
+      const timeDifference = dueDateObject.getTime() - currentDate.getTime();
+      const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
+
+      this.daysLeft =daysDifference ;
+
+      console.log(daysDifference);
+      if (daysDifference>=0){
+        this.payRequired = calculateReducedLoanAmount(apr, loanedAmount, daysDifference)
+      }
+      else{
+        this.payRequired = calculateLateLoanAmount(apr, loanedAmount, Math.abs(daysDifference))
+      }
+      //this.payRequired = payRequired;
+    },
+    async makeRepayment(){
+      const web3 = new Web3("http://localhost:8547");
+      const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddressLoan);
+      const result = await LoanContract.methods.getLoanDetails().call();
+
+      let requiredPay = this.payRequired;
+      let userInput = this.repay.amount;
+      if (userInput<requiredPay){
+        Toastify({
+          text: "Enter the amount required",
+          backgroundColor: "red",
+          position: "center",
+          duration: 3000,
+          // gravity: "bottom",
+          // offset: { y: 100 },
+          // onClick: function() {
+          //   window.open(NFTurl, "_blank");
+          // }
+        }).showToast();
+      }
+      else{
+        //web3.eth.defaultAccount = this.accountInstance
+        await web3.eth.personal.unlockAccount(this.accountInstance, localStorage.getItem("password"), 600);
+        let amountInWei = web3.utils.toWei((userInput), "ether");
+        LoanContract.methods.makeRepayment().send({
+          from: this.accountInstance,
+          value: amountInWei,
+        })
+        console.log("success")
+
+        //renders the balance again.
+        this.rerenderComponent();
+        this.rerenderBalance();
+        Toastify({
+          text: "Payment made!",
+          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+          position: "center",
+          duration: 3000,
+          // gravity: "bottom",
+          // offset: { y: 100 },
+          // onClick: function() {
+          //   window.open(NFTurl, "_blank");
+          // }
+        }).showToast();
+      }
+
+
+    },
+
+
+
+
+      async repayLoan(){
+        const web3 = new Web3("http://localhost:8547");
+        const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddress);
+        
+
+      },
       async alertUser(){
 
       },
@@ -358,12 +681,48 @@ export default {
         },
         //to fix
         async buyContract() {
+
+          const check = /^[0-9.]+$/;
+          const web3 = new Web3("http://localhost:8547");
+          let contractPrice = this.contractPrice;
+          const weiAmount = web3.utils.toWei(String(contractPrice), 'ether')  / (Math.pow(10, 3));
           
+
+
           // this.$refs.funds.getBalance();
 
-            const web3 = new Web3("http://localhost:8547");
+            //const web3 = new Web3("http://localhost:8547");
             const accounts = await web3.eth.getAccounts();
             this.loanContractInstance = new web3.eth.Contract(LoanABI, this.selectedAddressBuy);
+
+            const data = {
+                sender_address:this.accountInstance,
+                sender_password: localStorage.getItem('password'),
+                recipient_address: accounts[0],
+                value: weiAmount,
+            };
+            fetch("http://127.0.0.1:8000/send_transaction/", {
+                method: "POST",
+                body: new URLSearchParams(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                console.log(data);
+                //this.output = data;
+                if (data.transaction == null) {
+                    Toastify({
+                        text: "Insuffient funds"+data,
+                        duration: 3000,
+                        close: true,
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        stopOnFocus: true
+                    }).showToast();
+                }
+                
+                this.rerenderComponent();
+                this.rerenderBalance();
+                return;
+            })
             try {
                 const accounts = await web3.eth.getAccounts();
                 await this.loanContractInstance.methods.changeOwner(this.accountInstance).send({
@@ -371,7 +730,7 @@ export default {
                     gas: 3000000,
                 });
                 Toastify({
-                    text: `Owner Changed to` + this.accountInstance,
+                    text: `Contract bought by` + this.accountInstance,
                     backgroundColor: "green",
                     position: "center",
                 }).showToast();
@@ -424,15 +783,18 @@ export default {
         selectItem(index) {
             this.selectedItem = index;
             this.selectedAddress = this.ownedContracts[index]//this.contractAddresses[index];
+            
         },
         selectLoanItem(index) {
             //this.selectedItem = index;
             this.selectedAddress = this.loanedContracts[index];
             this.selectedAddressLoan = this.loanedContracts[index];
+            console.log(this.selectedAddressLoan)
         },
         selectBuyItem(index) {
             this.selectedAddress = this.contractsForSale[index];
             this.selectedAddressBuy = this.contractsForSale[index];
+            console.log(this.selectedAddressLoan)
             // Toastify({
             //       text: "The contract has not been deployed yet",
             //       backgroundColor: 'orange',
@@ -483,6 +845,7 @@ export default {
             const web3 = new Web3("http://localhost:8547");
             const accounts = await web3.eth.getAccounts();
             let arr = [];
+            let contractStatus = [];
             for (let i = 0; i < this.contractAddresses.length; i++) {
                 let address = this.contractAddresses[i];
                 try {
@@ -494,6 +857,7 @@ export default {
                     if (JSON.stringify(result[8].toLowerCase()) === JSON.stringify(collateralHolder.toLowerCase())) {
                         // this.test = result[9]
                         arr.push(address);
+                        contractStatus.push(result[6]);
                     }
                 }
                 catch (error) {
@@ -502,6 +866,7 @@ export default {
             }
             //this.test = arr.length
             this.loanedContracts = arr;
+            this.contractStatus = contractStatus;
         },
         async getLoanDetails() {
             try {
@@ -530,7 +895,7 @@ export default {
                     lender: result[0],
                     owner: result[1],
                     amount: result[2],
-                    rate: result[3],
+                    rate: result[3]/100,
                     duration: notifyRepaymentLeft((result[5]-result[4]), (result[5])) + " days",
                     dueDate: unixToDate(result[5]),
                     isRepaid: result[6] ? "Yes" : "No",
@@ -554,11 +919,11 @@ export default {
 
                 let NFTcontract = new web3.eth.Contract(nftABI, NFTaddress);
                 
-                Toastify({
-                    text: "hi",
-                    backgroundColor: "green",
-                    position: "center",
-                }).showToast();
+                // Toastify({
+                //     text: "hi",
+                //     backgroundColor: "green",
+                //     position: "center",
+                // }).showToast();
                 this.nftOwner = NFTid
                 try{
                   this.originalnftOwner = await NFTcontract.methods.originalOwnerOf(NFTid).call()
@@ -605,16 +970,19 @@ export default {
 #funds{
   color: white;
   border-style: solid;
-  border-radius: 25px ;
+  border-radius: 10px ;
   margin-left: 15px;
   margin-right: 15px;
   border-width: thin;
 }
 
+.text-white {
+  color: white;
+}
 
 #header{
   font-family: 'Arimo';
-  font-size: 20px;
+  font-size: 10px;
   color: white;
 }
 
@@ -643,7 +1011,7 @@ export default {
 #noinfo{
   border-style: solid;
   border-color: white;
-  border-radius: 25px;
+  border-radius: 10px;
 }
 
 .grid-container-element { 
@@ -652,7 +1020,7 @@ export default {
     grid-gap: 5px; 
     /* border: 1px solid black;  */
     width: 50%; 
-  
+    left: 60px;
     padding-top: 10px;
     width: 1920/2;
 } 
@@ -662,10 +1030,127 @@ export default {
     margin-right: 30px;
     margin: 10px; 
     border: 1px solid rgb(255, 255, 255); 
-    border-radius: 25px;
-    width: 375px
+    border-radius: 10px;
+    width: 475px
 }
 .message{
  color: white;
+}
+
+.contractinfo{
+ background: rgba(0,0,0,.6);
+  box-sizing: border-box;
+  box-shadow: 0 15px 10px rgba(0,0,0,.6);
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: -70px;
+  
+}
+
+.address{
+  color: rgb(255, 166, 0);
+}
+
+li {
+  cursor: pointer;
+}
+.selected {
+    background-color: rgb(255, 166, 0);
+    color: white;
+  }
+
+
+  .overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+.content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.95);
+  box-sizing: border-box;
+  box-shadow: 0 15px 10px rgba(0,0,0,.6);
+  border-radius: 10px;
+  padding: 10px;
+  margin-top: -70px;
+  padding: 20px;
+}
+
+.user-box {
+  position: relative;
+}
+
+.user-box input {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #fff;
+  margin-bottom: 30px;
+  border: none;
+  border-bottom: 1px solid #fff;
+  outline: none;
+  background: transparent;
+}
+
+.user-box label {
+  position: absolute;
+  top:0;
+  left: 0;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #fff;
+  pointer-events: none;
+  transition: .5s;
+}
+
+.user-box input:focus ~ label,
+.user-box input:valid ~ label {
+  top: -24px;
+  left: 0;
+  color: #f68e44;
+  font-size: 12px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter-active{
+  transition: opacity 0.5s;
+}
+
+.fade-enter, 
+.fade-leave-to {
+  opacity: 0;
+}
+
+
+.flip-enter-active,
+.flip-leave-active {
+  transition: transform 0.5s;
+}
+
+.flip-enter,
+.flip-leave-to {
+  transform: rotateY(90deg);
+}
+
+
+.confirmation {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+
 }
 </style>

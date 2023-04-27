@@ -4,3 +4,4 @@ personal.listAccounts
 web3.eth.accounts
 eth.sendTransaction({from: eth.coinbase, to: "0x7ad7b937a9fd1472fcc87cec8272d0f0d806717b", value: web3.toWei(100, "ether")})
 eth.sendTransaction({from: eth.coinbase, to: eth.accounts[0], value: web3.toWei(100, "ether")})
+eth.sendTransaction({from: eth.coinbase, to: eth.accounts[0], value: web3.toWei(10000, "ether")})
