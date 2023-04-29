@@ -34,13 +34,13 @@
         
         <label>Amount of Loan (in Ethers):</label>
         <br>
-        <input  v-model="form.amount" required/>
+        <input  v-model="form.amount" style=" width: 250px; " required/>
         
         <br>
         <!-- Rate: <br><input  v-model="form.rate"/>
         <br> -->
         <label>Duration:</label><br>
-        <select v-model="currentDuration" @change="durationToSeconds" style="padding-left: 45px;padding-right: 45px;">
+        <select v-model="currentDuration" @change="durationToSeconds" style=" width: 250px; padding-left: 85px;padding-right: 45px;">
           <!--Need to set the form.duration stuff -->
           <option v-for="duration in options" :key="duration" :value= "duration">
             {{ duration }}
@@ -49,19 +49,27 @@
        
         <!-- Number of months:<br> <input v-model="form.duration"/> -->
         <br>
-        Collateral value: <br><input v-model="form.collateralAmount" required/>
+        Collateral value (in Ether): <br><input style = " width: 250px" v-model="form.collateralAmount" required/>
         <br>
         <!-- Borrower Address: <br><input v-model="form.collateralHolder"/>
         <br> -->
         <!-- Desired Price of Contract (in Ethers):<br> <input v-model="form.price"/>
         <br> -->
-        Upload Collateral:
+        Select Collateral: <br>
+        <select v-model="nftFile"  style="padding-left: 45px;padding-right: 45px; width: 250px" required>
+          <!--Need to set the form.duration stuff -->
+          <option v-for="token in tokens" :key="token" :value= "token">
+            {{ token }}
+          </option>
+        </select>
+        <br>
+        <button @click="viewNFT">View Current Collateral</button>
         <br>
         <!-- <button> Upload </button> -->
-        <input style="margin-left: 60px;" type="file" @change="handleFileUpload" required/>
+        <!-- <input style="margin-left: 60px;" type="file" @change="handleFileUpload" required/>
+        <br> -->
         <br>
-        <br>
-        <span v-if="!nftFile" style="color: red;">Please upload a file</span>
+        <span v-if="!nftFile" style="color: red;">Please choose a collateral</span>
 
         <div style="padding-bottom: 10px; ">       
             <br>
@@ -136,12 +144,16 @@ import NFTmint from './NFTmint.vue';
 import UserLoanRequests from './UserLoanRequests.vue';
   export default {
     async mounted() {
+        
         this.getAccounts();
         await this.getAddress();
+        await this.getUsed();
         this.durationToSeconds();
+        this.getTokens();
     },
     data() {
         return {
+            contractAddresses: [],
             contractAddress: null,
             loanContractAddress: null,
             loanContractInstance: null,
@@ -172,9 +184,118 @@ import UserLoanRequests from './UserLoanRequests.vue';
             baseInterestRate: 3,
             curAccount: null,
             apr: 3,
+            token: null,
+            currentToken: null,
         };
     },
     methods: {
+        async viewNFT(){
+      const web3 = new Web3("http://localhost:8547");
+        //const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddress);
+       // const result = await LoanContract.methods.getLoanDetails().call();
+       // const NFTid = result[9]
+        const req = await fetch("http://127.0.0.1:8000/get_nft_address/");
+        let data = await req.json()
+        let NFTaddress = data.address;
+
+        let NFTcontract = new web3.eth.Contract(nftABI, NFTaddress);
+        // Toastify({
+        //     text: "hi",
+        //     backgroundColor: "green",
+        //     position: "center",
+        // }).showToast();
+        console.log(this.nftFile)
+        let NFTurl = await NFTcontract.methods.tokenURI(this.nftFile).call()
+        let msg = document.createElement("div");
+        //msg.innerHTML = "The NFT is available: <a href='" + NFTurl + "' target='_blank'>" + NFTurl + "</a> under id: " + NFTid;
+
+        Toastify({
+          text: "Click here to view the NFT",
+          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+          position: "center",
+          duration: 3000,
+          gravity: "bottom",
+          offset: { y: 100 },
+          onClick: function() {
+            window.open(NFTurl, "_blank");
+          }
+        }).showToast();
+
+    },
+        async getTokens(){
+            const req = await fetch("http://127.0.0.1:8000/get_nft_address/");
+            let data1 = await req.json()
+            this.contract.address = data1.address
+
+            
+            const web3 = new Web3("http://localhost:8547");
+            const accounts = await web3.eth.getAccounts();
+
+            var account = null;
+
+          
+            for (let i =0; i< accounts.length; i++){
+                if (JSON.stringify(accounts[i].toLowerCase()) === JSON.stringify(this.form.collateralHolder.toLowerCase())){
+                    account = accounts[i]
+                    break;
+                }
+            }
+
+            var contract = new web3.eth.Contract(nftABI, this.contract.address);
+            let nfts = []
+            for (let i = 0;i< this.contractAddresses.length; i++){
+                try{
+                let address = this.contractAddresses[i]
+                let LoanContract = new web3.eth.Contract(LoanABI, address);
+                let result = await LoanContract.methods.getLoanDetails().call();
+                if (!result[6]){
+                    nfts.push(result[9])
+                }
+                
+                }catch(error){
+                    continue;
+                }
+
+            }
+            let nftset = new Set(nfts);
+
+            console.log(nftset)
+            this.contract.instance = contract;
+           
+            //console.log(await contract.methods.tokensOfOwner(account).call())
+
+            //gets all token
+            let temp = await contract.methods.tokensOfOwner(account).call() 
+            let result=[];
+            for (let i = 0; i< temp.length; i++){
+               let token = temp[i];
+                    // let owner = await contract.methods.ownerOf(token).call();
+                    // console.log(owner)
+                    // let regex = new RegExp(`^${this.form.collateralHolder}$`, 'i');
+                    // if(owner.match(regex)){
+                       
+                    //     // this.tokens.push(token)
+                    //     //console.log(owner+" "+this.form.collateralHolder)
+                    //     same.push(token)
+                    // }
+                    // else{
+                        
+                    // }
+                    // const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddress);
+                    if (nftset.has(token)){
+                        continue
+                    }
+                    else{
+                        result.push(token)
+                    }
+
+
+
+            } 
+            this.tokens = result; 
+            console.log(result)
+            //console.log(account)
+        },
         aprCalculation(){
             try{
                 const rate = this.baseInterestRate
@@ -182,7 +303,7 @@ import UserLoanRequests from './UserLoanRequests.vue';
                 const days = this.form.duration/86400
                 const collateralValue = this.form.collateralAmount
                 
-                let interestRate = rate+ (1-(rate/100))*(1-(collateralValue/amount))
+                let interestRate = rate + (1 - (rate / 100)) * (1 - (collateralValue / amount)) * (365 / days);
                 let interestAmount = (amount * (interestRate/100) *(days/365))
 
                 //formula used to calculate the apr for stuff
@@ -287,6 +408,39 @@ import UserLoanRequests from './UserLoanRequests.vue';
             const accounts = await web3.eth.getAccounts();
             this.accounts = accounts;
             
+        },
+        async getUsed() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/contracts/");
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log(data); // Log the response data to the console for debugging
+                this.contractAddresses = data;
+                let set = new Set();
+                for (let i = 0; i < this.contractAddresses.length; i++) {
+                    set.add(this.contractAddresses[i]);
+                }
+                this.contractAddresses = Array.from(set);
+                // let final = []
+                // const web3 = new Web3("http://localhost:8547");
+
+                // for (let i = 0 ;i< this.contractAddresses.length; i++){
+                //     const LoanContract = new web3.eth.Contract(LoanABI, this.contractAddresses[i]);
+                //     const result = await LoanContract.methods.getLoanDetails().call();
+
+                //     if (result[9].normalize().toLowerCase() === this.accountInstance.normalize().toLowerCase()){
+                //         final.push(result[9])
+                //     }
+                // }
+                // this.
+
+                
+            }
+            catch (error) {
+                console.error(error); // Log any errors to the console
+            }
         },
         async getLoanDetails() {
             try {
@@ -428,16 +582,17 @@ import UserLoanRequests from './UserLoanRequests.vue';
             }
         },
         async requestLoan(){
-            const formData = new FormData();
-            formData.append("file", this.nftFile);
-            const response1 = await fetch("http://localhost:8000/generate-url/", {
-                method: "POST",
-                body: formData
-            });
-            const data = await response1.json();
+            //const formData = new FormData();
+           //formData.append("file", this.nftFile);
+
+            // const response1 = await fetch("http://localhost:8000/generate-url/", {
+            //     method: "POST",
+            //     body: formData
+            // });
+            // const data = await response1.json();
             //this.test = data.url;
-            //his.form.collateralUrl = data.url;
-            let url = data.url
+            
+            // let url = data.url
 
             //this.accountInstance = form.collateralHolder;
 
@@ -465,14 +620,10 @@ import UserLoanRequests from './UserLoanRequests.vue';
            
             console.log(await contract.methods.tokensOfOwner(account).call())
 
-            await contract.methods.mint(account, url).send({from: accounts[0]})
-           
-  
-
-
-            const tokenIds = await contract.methods.tokensOfOwner(account).call()
+           // await contract.methods.mint(account, url).send({from: accounts[0]})
+           const tokenIds = await contract.methods.tokensOfOwner(account).call()
             this.tokens = tokenIds;
-            const uri = await contract.methods.tokenURI(tokenIds[tokenIds.length-1]).call()
+            const uri = await contract.methods.tokenURI(this.nftFile).call()
             this.uri = uri
 
 
@@ -481,13 +632,26 @@ import UserLoanRequests from './UserLoanRequests.vue';
 
             //function that send the token to the contract
             try {
-                await contract.methods.transferFrom(account, accounts[0], tokenIds[tokenIds.length-1]).send({from: account})
+                await contract.methods.transferFrom(account, accounts[0], this.nftFile).send({from: account})
+                // Toastify({
+                //     text: "Current Owner is" + await contract.methods.ownerOf(this.nftFile).call(),
+                //     position: "center",
+                //     back
+                // }).showToast();
+                
                 console.log("Transfer successful")
+
+  
             } catch (error) {
-                console.log("Error transferring NFT: ", error)
+                Toastify({
+                    text: "You have already made request with this NFT, it is now owned by: " + await contract.methods.ownerOf(this.nftFile).call(),
+                    position: "center",
+                    backgroundColor:  "linear-gradient(to right, #00b09b, #96c93d)"
+                }).showToast();
+                return;
             }
 
-            console.log(tokenIds[tokenIds.length-1])
+            //console.log(tokenIds[tokenIds.length-1])
 
             const tokenId = tokenIds[tokenIds.length-1];
             const from = account;
@@ -499,7 +663,7 @@ import UserLoanRequests from './UserLoanRequests.vue';
             })
             .on('error', console.error);
 
-            let curUser = await contract.methods.ownerOf(tokenIds[tokenIds.length-1]).call();
+            let curUser = await contract.methods.ownerOf(this.nftFile).call();
             console.log("Current User:", curUser);
 
             let bank = await contract.methods.tokensOfOwner(accounts[0]).call();
@@ -536,6 +700,8 @@ import UserLoanRequests from './UserLoanRequests.vue';
                 return;
             }
 
+            // if (await contract.methods.ownerOf(this.nftFile))
+
 
             try{
                 const response = await fetch("http://127.0.0.1:8000/request_loan/", {
@@ -547,7 +713,7 @@ import UserLoanRequests from './UserLoanRequests.vue';
                         'rate': this.form.rate,
                         'collateralValue': this.form.collateralAmount,
                         'collateralHolder': this.form.collateralHolder,
-                        'collateralURL' : this.tokens[this.tokens.length-1],
+                        'collateralURL' : this.nftFile,
                         'price': this.form.price,
 
                     })
@@ -555,7 +721,7 @@ import UserLoanRequests from './UserLoanRequests.vue';
                 let datas = await response.json()
                 Toastify({
                     text: `Loan Request Made! `+account,
-                    backgroundColor: "green",
+                    backgroundColor:  "linear-gradient(to right, #00b09b, #96c93d)",
                     position: "center",
                 }).showToast();
 
@@ -742,6 +908,7 @@ import UserLoanRequests from './UserLoanRequests.vue';
                     Toastify({
                     text: "NFT uploaded "+this.contract.address + "with uri "+uri+d,
                     position: "center",
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
                     }).showToast();
 
                     // const id = await contract.methods.tokensOfOwner(contract.options.address).call()
@@ -826,7 +993,7 @@ import UserLoanRequests from './UserLoanRequests.vue';
             }).showToast();
             }
            
-        }
+       }
 
 
         },

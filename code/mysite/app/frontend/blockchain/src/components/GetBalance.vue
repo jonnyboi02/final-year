@@ -7,17 +7,17 @@
     border-radius: 10px;
     padding: 10px;
     margin-top: -70px;
-    height: 1000px;">
+    height: 1150px;">
       <!-- <h2>Details</h2> -->
-      <BalanceComponent/>
+      <BalanceComponent />
       <!-- <input v-model="account" type="text" placeholder="Enter account address" /><br>
       <div style="padding-top: 10px;">
       <button @click="getBalance">Get balance</button>
       </div>
       <p v-if="balance !== null">Balance: {{ balance }} ETH</p> -->
-      <div class="evaluate">
-        <h2>Evaluate NFT</h2>
-        <FundsComponent style="padding-left: 270px;"/>
+      <div class="evaluate" style="margin-top: -30px;">
+        <!-- <h2>Evaluate NFT</h2> -->
+        <FundsComponent style="padding-top: 100px;"/>
 
       </div>
       <div > 
@@ -88,8 +88,8 @@ import FundsComponent from './FundsComponent.vue';
 
   <style>
   .evaluate{
-    border-color: white;
-    border-style: solid;
+    /* border-color: white; */
+    /* border-style: solid; */
     border-radius: 10px;
     border-width: thin;
     margin-left: 15px;

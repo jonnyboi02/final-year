@@ -35,7 +35,7 @@ export default {
           this.errorMessage = null;
           Toastify({
             text: 'Account created successfully!',
-            backgroundColor: 'green',
+            backgroundColor: ' "linear-gradient(to right, #00b09b, #96c93d)"',
             gravity: 'top',
             position: 'center'
           }).showToast();

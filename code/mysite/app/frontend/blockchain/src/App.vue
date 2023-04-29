@@ -83,7 +83,7 @@ export default {
 
 }
 .container h3{
-  font-family: "Anton";
+  font-family: "Roboto Condensed";
 }
 
 #navbarCollapse{

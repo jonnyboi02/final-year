@@ -1,0 +1,6 @@
+Conditions: 
+Negotiation amount: 2
+Negotiation user: 0x21f593b9263935c83a165466d51f7306af8e3666
+Value: 1 of 2.0
+Description: 2
+Asset: http://127.0.0.1:8000/media/negotiation_photos/Capture2_qlLLtr8.PNG

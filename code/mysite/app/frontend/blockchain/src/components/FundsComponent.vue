@@ -1,48 +1,179 @@
 <template>
-<div>
-    <div class="request-box">
-    <form>
-        
-            <div class="user-box" >
-                    <input id = 'username' type="text" name="" required="" >
-                    <label>House Address</label>
-                </div>
-                <div class="user-box">
-                    <!-- <input id = 'password' type="password" name="" required=""  > -->
-                    <input type="file" @change="handleFileUpload">
-                    <label>Image</label>
-            </div>
-            <a href="#">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                Submit
-            </a>
-        
-    </form>
+  <div>
+    <div id='details' style="background-color: transparent; box-shadow: none; border-color: transparent;">
+      
+      <div class="requests"  style="">
+        <div class="request-list" style="width: 450px;">
+          <h2>Details</h2>
+        <div class="request-box" style="padding-left: 80px;">
+      <form @submit.prevent="submitForm">
+        <div class="user-box">
+          <input type="text" v-model="description" required>
+          <label>Description</label>
+        </div>
+        <div class="user-box">
+          <input type="text" v-model="amount" required>
+          <label>Number of NFTs</label>
+        </div>
+        <div class="user-box">
+          <input type="file" ref="fileInput" @change="handleFileUpload">
+          <label>Image</label>
+        </div>
+        <button type="submit">Submit</button>
+      </form>
     </div>
-</div>
-
-
+    </div>
+        <div class="request-list">
+          <h2>Asset Evaluations</h2>
+          <nav id="lists" style=" padding-top: 10px; height: 220px;">
+            <ul v-if="negotiations && negotiations.length > 0"  >
+              <div style="padding-bottom: 100px;">
+                <li v-for="(negotiation, index) in negotiations" :key="negotiation" :value="negotiation"  :class="{'selected': isSelected(index)}" @click="selectNFT(index)" style="width: 330px;padding: 2px; border-style: solid; border-radius: 10px; align: center; padding-left: 10px; padding-right: 15px; ">
+                  {{  negotiation.collateralHolder }} Request {{ negotiation.id }}
+                </li>
+              </div>
+            </ul>
+           
+          </nav>
+          <div v-if="currentNftRequest" style="margin-top: 20px;">
+            <button @click="viewAsset">View Asset</button>
+          </div>
+        </div>
+      </div>
+      </div>
+    
+  </div>
 </template>
 
 <script>
-export default{
-    data(){
-        return{
 
-        }
+import Web3 from 'web3';
+  import Toastify from 'toastify-js';
+  import 'toastify-js/src/toastify.css';
+export default {
+  data() {
+    return {
+      selected: -1,
+      description: '',
+      file: null,
+      amount: '',
+      senderAddress: "",
+      negotiations: [],
+      nftindex: 0,
+      currentNftRequest: null,
+    };
+  },
+  computed:{
+  
+    isSelected() {
+      return (index) => index === this.selected;
     }
-}
+  },
+  async mounted(){
+    await this.getAddress();
+    await this.getNegotiations();
+  },
+  methods: {
+    viewAsset(){
+      window.location.href = "http://localhost:8000/media/" + this.currentNftRequest.photo;
+    },
+    selectNFT(index){
+      this.selected = index;
+      this.nftindex = index;
+      this.currentNftRequest = this.negotiations[index];
+      var currentNegotiation = this.currentNftRequest;
+      var message = "Details of Asset Evaluation\nRequest ID: " + this.currentNftRequest.id + "\n" +
+              "Requester: " + this.currentNftRequest.user + "\n" +
+              "Picture: " + (this.currentNftRequest.photo ? 'http://localhost:8000/media/' + this.currentNftRequest.photo : "") + "\n" +
+              "NFTs requested: " + this.currentNftRequest.amount + "\n" +
+              "Description: " + this.currentNftRequest.description + "\n" +
+              "Agreed? " + (this.currentNftRequest.accepted ? "Yes" : "No");
+      Toastify({
+          text: message,
+          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+          position: "center",
+          duration: 5000,
+
+        }).showToast();
+    },
+    async getNegotiations(){
+          fetch('http://127.0.0.1:8000/get_negotiations/')
+            .then(response => response.json())
+            .then(data => {
+              this.negotiations = data;
+              this.negotiations = this.negotiations.filter((cur)=> cur.user.toLowerCase() === this.senderAddress.toLowerCase())
+            })
+            .catch(error => console.log(error));
+
+            console.log(this.negotiations.length)
+        },
+    async getAddress() {
+        const response = await fetch("http://127.0.0.1:8000/get_address/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: localStorage.getItem("username"),
+          }),
+        });
+        const data = await response.json();
+        if (data.error) {
+          console.log(error);
+        } else {
+          this.senderAddress = data.key;
+          this.senderPassword = localStorage.getItem("password");
+        }
+      },
+    handleFileUpload(event) {
+      this.file = event.target.files[0];
+    },
+
+    //submits the negotiation request.
+    async submitForm() {
+      const formData = new FormData();
+      
+      formData.append('amount',this.amount);
+      formData.append('password', localStorage.getItem('password'))
+      formData.append('user', this.senderAddress);
+      formData.append('customer_offer', "True");
+      formData.append('bank_offer', "False");
+      formData.append('photo', this.file);
+      formData.append('description', this.description);
+     
+      
+      //formData.append('bank_offer', "False");
+      Toastify({
+                        text: "Request Made",
+                        
+                        close: true,
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        
+            }).showToast();
 
 
 
+      const response = await fetch('http://127.0.0.1:8000/create_negotiation/', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+    }
+  }
+};
 </script>
 
 
 
+
 <style>
+.selected {
+  background-color: #ccc;
+}
+
 .request-box {
 
   top: 40%;

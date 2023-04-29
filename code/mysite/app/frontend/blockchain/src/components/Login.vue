@@ -61,7 +61,7 @@ export default{
                 this.$router.push({name: 'Send Transaction'})
                 Toastify({
                     text: 'Login successful' + user.username,
-                    backgroundColor: 'green',
+                    backgroundColor:  "linear-gradient(to right, #00b09b, #96c93d)",
                     className: 'toastify-content',
                 }).showToast();
             })

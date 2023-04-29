@@ -46,7 +46,7 @@
         <div>
             <button v-if="loanRequest.loanWaiting" class = 'buttons' @click="acceptLoan">Approve Loan</button>
             <button v-if='loanRequest.loanWaiting' class = 'buttons'  @click="rejectLoan">Reject Loan</button>
-            <button class = 'buttons'>View NFT</button>
+            <button class = 'buttons' @click="viewNFT">View NFT</button>
         </div>
 
         {{ tokens }}
@@ -54,6 +54,57 @@
       </div>
       <div v-else id="loanDetails">
         <h2>Select on a loan to view the details of.</h2>
+      </div>
+
+      <div id="">
+        <h2>NFT requests</h2>
+        <div class="requests">
+        <div class="request-list">
+          <h2>Asset Evaluations</h2>
+          <nav id="lists" style=" padding-top: 10px;">
+            <ul v-if="negotiations && negotiations.length > 0"  >
+              <div style="padding-bottom: 100px;">
+                <li v-for="(negotiation, index) in negotiations" :key="lender" :value="lender" @click="selectNFTrequest(index)" style="padding: 2px; border-style: solid; border-radius: 10px; padding-left: 10px; padding-right: 15px;  ">
+                    ID: {{  negotiation.id }} NFT request {{ negotiation.user }}
+                </li>
+              </div>
+            </ul>
+           
+          </nav>
+
+        </div>
+        <div class="request-list">
+          <h2>Details</h2>
+          
+          <div v-if="currentNegotiation">
+            <p>Request ID: {{ currentNegotiation.id }}</p>
+            <p> Requester: {{ currentNegotiation.user }}</p>   
+            <p>Picture:  </p>
+            <img v-if="currentNegotiation.photo" :src="'http://localhost:8000/media/' + currentNegotiation.photo" :alt="currentNegotiation.description" style="width:200px; height: 200px ">
+            <p> NFTs requested: {{ currentNegotiation.amount }}</p>
+            <p> Description: {{ currentNegotiation.description }}</p>
+            <p>Agreed? {{ currentNegotiation.accepted ? "Yes" : "No" }}</p>
+            <button v-if="!currentNegotiation.accepted" style="margin-right: 10px;" @click="acceptAsset">Accept Asset</button>
+            <button  v-if="!currentNegotiation.accepted" style="margin-right: 10px; margin-bottom: 10px;">Reject Asset</button>
+            
+            <button v-if="currentNegotiation.accepted" @click="viewConditions" >View Conditions</button>
+          </div>
+          <div v-else>
+            Select an Asset Evaluation.
+          </div>
+          <!-- <nav id="lists" style=" padding-top: 10px;">
+            <ul v-if="nonWaitingLoans && nonWaitingLoans.length > 0"  >
+              <div style="padding-bottom: 100px;">
+                <li v-for="(lender, index) in nonWaitingLoans" :key="lender" :value="lender" @click="selectNonWaitItem(index)" style="padding: 2px; border-style: solid; border-radius: 10px; align: center; padding-left: 10px; padding-right: 15px; ">
+                  {{  lender.collateralHolder }} Loan {{ lender.id }}
+                </li>
+              </div>
+            </ul>
+           
+          </nav> -->
+        </div>
+      </div>
+
       </div>
     </div>
   </template>
@@ -92,12 +143,115 @@ import NFTmint from './NFTmint.vue';
         uri: null,
         loanContractAddress: null,
         loanContractInstance: null,
+        negotiations: [],
+        currentNegotiation: null,
+        negotiationIndex: 0,
       };
     },
     async mounted() {
       await this.getLoans();
+      await this.getNegotiations();
     },
     methods: {
+      viewConditions(){
+      window.location.href = "http://localhost:8000/media/" + this.currentNegotiation.conditions;
+    },
+    async viewNFT(){
+      const web3 = new Web3("http://localhost:8547");
+        //const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddress);
+       // const result = await LoanContract.methods.getLoanDetails().call();
+       // const NFTid = result[9]
+        const req = await fetch("http://127.0.0.1:8000/get_nft_address/");
+        let data = await req.json()
+        let NFTaddress = data.address;
+
+        let NFTcontract = new web3.eth.Contract(nftABI, NFTaddress);
+        // Toastify({
+        //     text: "hi",
+        //     backgroundColor: "green",
+        //     position: "center",
+        // }).showToast();
+        let NFTurl = await NFTcontract.methods.tokenURI(this.loanRequest.collateralURL).call()
+        let msg = document.createElement("div");
+        //msg.innerHTML = "The NFT is available: <a href='" + NFTurl + "' target='_blank'>" + NFTurl + "</a> under id: " + NFTid;
+
+        Toastify({
+          text: "Click here to view the NFT",
+          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+          position: "center",
+          duration: 3000,
+          gravity: "bottom",
+          offset: { y: 100 },
+          onClick: function() {
+            window.open(NFTurl, "_blank");
+          }
+        }).showToast();
+
+    }, 
+      async acceptAsset(){
+                const req = await fetch("http://127.0.0.1:8000/get_nft_address/");
+                let data = await req.json()
+                this.contract.address = data.address
+                const web3 = new Web3("http://localhost:8547");
+                const accounts = await web3.eth.getAccounts();
+                var contract = new web3.eth.Contract(nftABI, this.contract.address);
+                var currentConditions = this.currentNegotiation;
+                await web3.eth.personal.unlockAccount(currentConditions.user, currentConditions.password, 600);
+                
+                var negotiationId = currentConditions.id
+                try{
+
+                  //creates the contract
+                  let response = await fetch("http://127.0.0.1:8000/create_conditions/",{
+                    method: "POST",
+                    body: new URLSearchParams({
+                      negotiation_id: negotiationId,
+                     })
+                  })
+
+                  let data = await response.json()
+                  let url = data.file_url
+                  for (let i = 0; i<currentConditions.amount; i++){
+                    await contract.methods.mint(currentConditions.user, url).send({from: accounts[0]});
+                  }
+
+                  
+                  //refreshes the negotititaions
+                 await this.getNegotiations();
+                 //updates selected one
+                 this.currentNegotiation = this.negotiations[negotiationId-1]
+                  Toastify({
+                        text: "This user has NFTs: "+ await contract.methods.tokensOfOwner(currentConditions.user).call(),
+                        duration: 3000,
+                        close: true,
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        stopOnFocus: true
+                    }).showToast();
+                 // await this.getNegotiations();
+
+                  
+
+
+                }catch(error){
+                  console.log(error)
+                }
+      },
+
+        selectNFTrequest(index){
+          this.currentNegotiation = this.negotiations[index];
+          this.negotiationIndex = index;
+        },
+        async getNegotiations(){
+          fetch('http://127.0.0.1:8000/get_negotiations/')
+            .then(response => response.json())
+            .then(data => {
+              this.negotiations = data;
+            })
+            .catch(error => console.log(error));
+
+            console.log(this.negotiations.length)
+        },
+
         async rejectLoan(){
                 var account = this.loanRequest.collateralHolder
                 //gets the address of the nft contract
@@ -235,9 +389,15 @@ import NFTmint from './NFTmint.vue';
                 // await contract.methods.mint(account, url).send({from: accounts[0]})
                 const tokenIds = await contract.methods.tokensOfOwner(account).call()
                 this.tokens = tokenIds;
-                const uri = await contract.methods.tokenURI(tokenIds[tokenIds.length-1]).call()
+
+                const uri = await contract.methods.tokenURI(url).call()
                 this.uri = uri
 
+            
+                // Toastify({
+                // text:await contract.methods.ownerOf(url).call(),
+                // position: "center",
+                // }).showToast();
                 //await web3.eth.personal.unlockAccount(account, localStorage.getItem('password'), 600);
                
 
@@ -246,6 +406,7 @@ import NFTmint from './NFTmint.vue';
                 Toastify({
                 text: "NFT uploaded "+this.contract.address + "with uri "+uri,
                 position: "center",
+                backgroundColor:  "linear-gradient(to right, #00b09b, #96c93d)",
                 }).showToast();
             }catch(error){
                 console.log(error)
@@ -279,7 +440,7 @@ import NFTmint from './NFTmint.vue';
             this.form.duration= this.loanRequest.duration
             this.form.collateralHolder= this.loanRequest.collateralHolder
             this.form.collateralAmount = this.loanRequest.collateralValue
-            this.form.collateralUrl= this.tokens[this.tokens.length-1]
+            this.form.collateralUrl= this.loanRequest.collateralURL
             this.form.price= this.loanRequest.price
 
             
@@ -314,11 +475,11 @@ import NFTmint from './NFTmint.vue';
 
             try { 
                 //deploys the smart contract
-                Toastify({
-                            text: 'Deploying for '+this.form.collateralHolder,
-                            backgroundColor: "green",
-                            position: "center",
-                        }).showToast();
+                // Toastify({
+                //             text: 'Deploying for '+this.form.collateralHolder,
+                //             backgroundColor: "green",
+                //             position: "center",
+                //         }).showToast();
                         const contract = await LoanContract.deploy({
                             arguments: args
                         }).send(options);
@@ -339,8 +500,8 @@ import NFTmint from './NFTmint.vue';
                         //const fileReader = new FileReader();
   
                         Toastify({
-                            text: `Deployed loan contract address: ` + this.loanContractAddress + " " + this.form.collateralHolder,
-                            backgroundColor: "green",
+                            text: `Deployed loan contract address: ` + this.loanContractAddress + " for " + this.form.collateralHolder,
+                            backgroundColor:  "linear-gradient(to right, #00b09b, #96c93d)",
                             position: "center",
                         }).showToast();
                     }

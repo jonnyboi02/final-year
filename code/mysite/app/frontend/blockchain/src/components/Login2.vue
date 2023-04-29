@@ -71,7 +71,7 @@ import "toastify-js/src/toastify.css"
             this.$router.push('/dashboard');
             Toastify({
                     text: 'Login successful' + localStorage.getItem('username') +" "+ localStorage.getItem('password'),
-                    backgroundColor: 'green',
+                    backgroundColor:  "linear-gradient(to right, #00b09b, #96c93d)",
                     className: 'toastify-content',
             }).showToast();
             

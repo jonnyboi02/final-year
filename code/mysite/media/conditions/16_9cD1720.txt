@@ -1,0 +1,5 @@
+Negotiation amount: 2
+Negotiation user: 0x21f593b9263935c83a165466d51f7306af8e3666
+Value:0.5
+Description: 2
+Asset: negotiation_photos/Capture2_cYhjj93.PNG

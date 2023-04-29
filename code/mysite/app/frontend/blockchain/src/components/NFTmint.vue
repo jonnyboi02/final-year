@@ -143,6 +143,7 @@ export default{
                     Toastify({
                             text: "NFT uploaded "+this.contract.address + "with uri "+uri,
                             position: "center",
+                            backgroundColor:  "linear-gradient(to right, #00b09b, #96c93d)"
                     }).showToast();
 
 

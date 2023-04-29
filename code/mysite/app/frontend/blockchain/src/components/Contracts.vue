@@ -182,7 +182,7 @@
                 <div>
                   The Contract Price is: {{ contractPrice }} ETH
                 </div>
-                <div v-if="canBuyContract">
+                <div v-if="canBuyContract===true">
                   <span style="color: greenyellow">You can afford this.</span>
                 </div>
                 <div v-else>
@@ -537,6 +537,7 @@ export default {
       const web3 = new Web3("http://localhost:8547");
       const LoanContract = new web3.eth.Contract(LoanABI, this.selectedAddressLoan);
       const result = await LoanContract.methods.getLoanDetails().call();
+      const accounts = await web3.eth.getAccounts();
 
       let requiredPay = this.payRequired;
       let userInput = this.repay.amount;
@@ -566,17 +567,31 @@ export default {
         //renders the balance again.
         this.rerenderComponent();
         this.rerenderBalance();
-        Toastify({
-          text: "Payment made!",
-          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
-          position: "center",
-          duration: 3000,
-          // gravity: "bottom",
-          // offset: { y: 100 },
-          // onClick: function() {
-          //   window.open(NFTurl, "_blank");
-          // }
-        }).showToast();
+
+        try{
+          const req = await fetch("http://127.0.0.1:8000/get_nft_address/");
+          let data = await req.json()
+          let nftaddress = data.address;
+          var contract = new web3.eth.Contract(nftABI, nftaddress);
+          let token = result[9]
+          let account = this.accountInstance
+          let tokens = await contract.methods.tokensOfOwner(this.accountInstance).call()
+          await contract.methods.transferFrom(accounts[0],account, token).send({from: accounts[0]})
+
+          Toastify({
+            text: "Payment made!",
+            backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+            position: "center",
+            duration: 3000,
+            // gravity: "bottom",
+            // offset: { y: 100 },
+            // onClick: function() {
+            //   window.open(NFTurl, "_blank");
+            // }
+          }).showToast();
+      }catch(error){
+        console.log(error)
+      }
       }
 
 
@@ -630,7 +645,7 @@ export default {
 
         Toastify({
           text: "Click here to view the NFT for "+this.selectedAddress+" Contract!",
-          backgroundColor: "green",
+          backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
           position: "center",
           duration: 3000,
           gravity: "bottom",
@@ -927,7 +942,18 @@ export default {
                 this.nftOwner = NFTid
                 try{
                   this.originalnftOwner = await NFTcontract.methods.originalOwnerOf(NFTid).call()
-                  this.nftOwner = await NFTcontract.methods.ownerOf(NFTid).call()
+                   Toastify({
+                    text: await NFTcontract.methods.ownerOf(NFTid).call(),
+                    backgroundColor: "green",
+                    position: "center",
+                }).showToast();
+                  // if (JSON.stringify(await NFTcontract.methods.ownerOf(NFTid).call()) !== JSON.stringify(this.accountInstance)){
+                    this.nftOwner = await NFTcontract.methods.ownerOf(NFTid).call()
+                  // }
+                  // else{
+                  //   this.nftOwner = accounts[0]
+                  // }
+                  //this.nftOwner = await NFTcontract.methods.ownerOf(NFTid).call()
                 }catch(error){
                   Toastify({
                     text: error,
@@ -1152,5 +1178,9 @@ li {
   border-radius: 5px;
   text-align: center;
 
+}
+
+h3{
+  font-family: 'Arimo';
 }
 </style>

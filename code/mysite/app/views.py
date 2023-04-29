@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 
 from .forms import ContractForm
-from .models import User, Contract, NFTContract, LoanRequest
+from .models import Negotiation, User, Contract, NFTContract, LoanRequest
 from django.views.decorators.csrf import csrf_exempt
 import io, json
 from django.contrib.auth import authenticate, login
@@ -19,12 +19,66 @@ from django.http import HttpResponse
 from django.conf import settings
 import os
 import uuid
+from django.core import serializers
+from django.core.files import File
+
 
 import re
 #from web3 import Web3
 # Create your views here.
 def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
+
+def create_conditions(request):
+    if request.method == 'POST':
+        negotiation_id = request.POST.get('negotiation_id')
+        negotiation = Negotiation.objects.get(id=negotiation_id)
+        negotiation.accepted=True
+
+        # Create a file with some information
+        
+        file_content = f"Conditions: \nNegotiation amount: {negotiation.amount}\nNegotiation user: {negotiation.user}\nValue: 1 of {float(negotiation.amount)}\nDescription: {negotiation.description}\nAsset: http://127.0.0.1:8000/media/{negotiation.photo}"
+        file_path = os.path.join(settings.MEDIA_ROOT, 'conditions', f"{negotiation_id}.txt")
+
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        with open(file_path, 'w') as f:
+            f.write(file_content)
+
+        # Save the file path in the Negotiation object
+        negotiation.conditions.save(f"{negotiation_id}.txt", File(open(file_path, 'rb')))
+        
+        # Get the URL for the file
+        file_url = request.build_absolute_uri(negotiation.conditions.url)
+
+        return JsonResponse({'status': 'success', 'file_url': file_url})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+    
+#get all negotiation objects
+def all_negotiations(request):
+    negotiations = Negotiation.objects.all().values()
+    return JsonResponse(list(negotiations), safe=False)
+    # serialized_negotiations = serializers.serialize('json', negotiations)
+    # return JsonResponse({'negotiations': serialized_negotiations})
+
+#create negotiation for user
+def create_negotiation(request):
+    if request.method == 'POST':
+        amount = request.POST.get('amount')
+        user = request.POST.get('user')
+        customer_offer = request.POST.get('customer_offer')
+        bank_offer = request.POST.get('bank_offer')
+        photo = request.FILES.get('photo', None)
+        description = request.POST.get('description', '')
+        password = request.POST.get('password')
+
+        negotiation = Negotiation.objects.create(amount=amount, user=user, customer_offer=customer_offer,
+                                                 bank_offer=bank_offer, photo=photo, description=description, password=password)
+        return JsonResponse({'status': 'success', 'negotiation_id': negotiation.id})
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
 
 @csrf_exempt
 def request_loan(request):

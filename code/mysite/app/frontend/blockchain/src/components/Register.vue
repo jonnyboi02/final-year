@@ -90,7 +90,7 @@ export default{
             if (response.ok){
                 Toastify({
                     text: 'Account Created Successfully! ' ,
-                    backgroundColor: 'green',
+                    backgroundColor:  "linear-gradient(to right, #00b09b, #96c93d)",
                     gravity: 'top',
                     position: 'right'
                 }).showToast();

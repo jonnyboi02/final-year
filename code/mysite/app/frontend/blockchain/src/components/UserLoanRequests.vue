@@ -157,7 +157,7 @@ export default{
             loanDetails += `Collateral URL: ${loanRequest.collateralURL}\n`;
             }
 
-            loanDetails += `Loan Approved: ${loanRequest.loanApproved ? "Yes" : "No"}\nLoan Waiting: ${loanRequest.loanWaiting ? "Yes": "No"}\nSale Price: ${loanRequest.price} ETH\nRequest Time: ${loanRequest.request_time ?  `${new Date(loanRequest.request_time).toLocaleDateString('en-US')} ${new Date(loanRequest.request_time).toLocaleTimeString('en-US', {hour12: false})}`: `${loanRequest.request_time.toLocaleDateString('en-US')} ${loanRequest.request_time.toLocaleTimeString('en-US', {hour12: false})}`}`;
+            loanDetails += `Loan Approved: ${loanRequest.loanApproved ? "Yes" : "No"}\nLoan Waiting: ${loanRequest.loanWaiting ? "Yes": "No"}\nRequest Time: ${loanRequest.request_time ?  `${new Date(loanRequest.request_time).toLocaleDateString('en-US')} ${new Date(loanRequest.request_time).toLocaleTimeString('en-US', {hour12: false})}`: `${loanRequest.request_time.toLocaleDateString('en-US')} ${loanRequest.request_time.toLocaleTimeString('en-US', {hour12: false})}`}`;
 
             Toastify({
                         text: loanDetails,
